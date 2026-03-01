@@ -1,0 +1,33 @@
+name: Update Manifest
+
+on:
+  push:
+    branches:
+      - dev
+    paths-ignore:
+      - 'manifest.xml'
+
+jobs:
+  update-manifest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Generate manifest
+        run: bash love/scripts/generate-manifest.sh
+
+      - name: Commit and push if changed
+        run: |
+          git diff --quiet manifest.xml && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add manifest.xml
+          git commit -m "Update manifest.xml"
+          git push
