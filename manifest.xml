@@ -4,10 +4,6 @@
 	<Source part="default" url="https://raw.githubusercontent.com/NDari/PathOfBuilding/{branch}/" />
 	<Source part="program" url="https://raw.githubusercontent.com/NDari/PathOfBuilding/{branch}/src/" />
 	<Source part="tree" url="https://raw.githubusercontent.com/NDari/PathOfBuilding/{branch}/src/" />
-	<File name="Builds/PathOfBuilding/LICENSE.md" part="default" sha1="be578b61d2b3381db4135c02101b2b0fc34fdeac" />
-	<File name="Builds/PathOfBuilding/src/changelog.txt" part="default" sha1="968c83984e54cb2d43032296405fe9f9701939c0" />
-	<File name="Builds/PathOfBuilding/src/help.txt" part="default" sha1="b1287f429e40ffdb96a2aff30b20adfa1540cf66" />
-	<File name="Builds/PathOfBuilding/src/LICENSE.md" part="default" sha1="be578b61d2b3381db4135c02101b2b0fc34fdeac" />
 	<File name="changelog.txt" part="default" sha1="968c83984e54cb2d43032296405fe9f9701939c0" />
 	<File name="help.txt" part="default" sha1="b1287f429e40ffdb96a2aff30b20adfa1540cf66" />
 	<File name="LICENSE.md" part="default" sha1="be578b61d2b3381db4135c02101b2b0fc34fdeac" />
