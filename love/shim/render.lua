@@ -308,7 +308,7 @@ function M.executeDrawCommands()
 					end
 					-- Handle newlines within a segment
 					local first = true
-					for line in seg.text:gmatch("([^\n]*)\n?") do
+					for line in (seg.text.."\n"):gmatch("([^\n]*)\n") do
 						if not first then
 							-- Newline: reset x and advance y
 							curX = startX

@@ -74,6 +74,9 @@ function buildMode:Init(dbFileName, buildName, buildXML, convertBuild, importLin
 	self.spectreList = { }
 	self.timelessData = { jewelType = { }, conquerorType = { }, devotionVariant1 = 1, devotionVariant2 = 1, jewelSocket = { }, fallbackWeightMode = { }, searchList = "", searchListFallback = "", searchResults = { }, sharedResults = { } }
 	self.viewMode = "TREE"
+	self.compareSnapshot = nil
+	self.compareLabel = nil
+	self.compareInputState = nil
 	self.characterLevel = m_min(m_max(main.defaultCharLevel or 1, 1), 100)
 	self.targetVersion = liveTargetVersion
 	self.bandit = "None"
@@ -420,8 +423,38 @@ function buildMode:Init(dbFileName, buildName, buildXML, convertBuild, importLin
 	-- List of display stats
 	self.displayStats, self.minionDisplayStats, self.extraSaveStats = LoadModule("Modules/BuildDisplayStats")
 
+	-- Build comparison module
+	self.buildCompare = LoadModule("Modules/BuildCompare")
+
 	-- Controls: Side bar
 	self.anchorSideBar = new("Control", nil, {4, 36, 0, 0})
+	self.controls.sideBarDragger = new("Control", nil, {0, 32, 4, 0})
+	self.controls.sideBarDragger.x = function() return main.sideBarWidth - 4 end
+	self.controls.sideBarDragger.height = function() return main.screenH - 32 end
+	self.controls.sideBarDragger.dragging = false
+	function self.controls.sideBarDragger:IsMouseOver()
+		if not self:IsShown() then return false end
+		return self:IsMouseInBounds()
+	end
+	function self.controls.sideBarDragger:Draw()
+		if self:IsMouseOver() or self.dragging then
+			local x, y = self:GetPos()
+			local width, height = self:GetSize()
+			SetDrawColor(1, 1, 1, 0.5)
+			DrawImage(nil, x, y, width, height)
+		end
+	end
+	function self.controls.sideBarDragger:OnKeyDown(key)
+		if key == "LEFTBUTTON" then
+			self.dragging = true
+			return self
+		end
+	end
+	function self.controls.sideBarDragger:OnKeyUp(key)
+		if key == "LEFTBUTTON" then
+			self.dragging = false
+		end
+	end
 	self.controls.modeImport = new("ButtonControl", {"TOPLEFT",self.anchorSideBar,"TOPLEFT"}, {0, 0, 134, 20}, "Import/Export Build", function()
 		self.viewMode = "IMPORT"
 	end)
@@ -454,6 +487,44 @@ function buildMode:Init(dbFileName, buildName, buildXML, convertBuild, importLin
 		self.viewMode = "PARTY"
 	end)
 	self.controls.modeParty.locked = function() return self.viewMode == "PARTY" end
+	self.controls.compareSnapshot = new("ButtonControl", {"LEFT",self.controls.modeParty,"RIGHT"}, {8, 0, 90, 20}, "Snapshot", function()
+		if self.compareSnapshot then
+			self.compareSnapshot = nil
+			self.compareLabel = nil
+			self.compareInputState = nil
+		else
+			if not self.calcsTab or not self.calcsTab.mainOutput then
+				return
+			end
+			self.compareSnapshot = copyTableSafe(self.calcsTab.mainOutput)
+			self.compareLabel = "Snapshot"
+			if self.buildCompare then
+				self.compareInputState = self.buildCompare.captureState(self)
+			end
+		end
+		self:RefreshStatList()
+	end)
+	self.controls.compareSnapshot.label = function()
+		return self.compareSnapshot and "Clear Compare" or "Snapshot"
+	end
+	self.controls.compareSnapshot.tooltipFunc = function(tooltip)
+		tooltip:Clear()
+		if self.compareSnapshot then
+			tooltip:AddLine(16, "^7Click to clear the comparison snapshot")
+		else
+			tooltip:AddLine(16, "^7Click to snapshot current stats.")
+			tooltip:AddLine(16, "^7After making changes, the sidebar will")
+			tooltip:AddLine(16, "^7show deltas vs. the snapshot.")
+		end
+	end
+	self.controls.compareBuild = new("ButtonControl", {"LEFT",self.controls.compareSnapshot,"RIGHT"}, {4, 0, 118, 20}, "Compare Build...", function()
+		self:OpenCompareBuildPopup()
+	end)
+	self.controls.compareBuild.tooltipFunc = function(tooltip)
+		tooltip:Clear()
+		tooltip:AddLine(16, "^7Compare against another build by")
+		tooltip:AddLine(16, "^7pasting a build code or selecting a file.")
+	end
 	-- Skills
 	self.controls.mainSkillLabel = new("LabelControl", {"TOPLEFT",self.anchorSideBar,"TOPLEFT"}, {0, 80, 300, 16}, "^7Main Skill:")
 	self.controls.mainSocketGroup = new("DropDownControl", {"TOPLEFT",self.controls.mainSkillLabel,"BOTTOMLEFT"}, {0, 2, 300, 18}, nil, function(index, value)
@@ -575,6 +646,17 @@ function buildMode:Init(dbFileName, buildName, buildXML, convertBuild, importLin
 			control.str = {}
 		end
 	end
+
+	-- Apply initial sidebar width to controls
+	local sideBarW = main.sideBarWidth - 12
+	self.controls.mainSkillLabel.width = sideBarW
+	self.controls.mainSocketGroup.width = sideBarW
+	self.controls.mainSkill.width = sideBarW
+	self.controls.mainSkillPart.width = sideBarW
+	self.controls.statBox.width = function() return main.sideBarWidth - 12 end
+	local colX = m_floor(sideBarW * 170 / 300)
+	self.controls.statBox.columns[1].x = colX
+	self.controls.statBox.columns[2].x = colX + 4
 
 	-- Initialise build components
 	self.latestTree = main.tree[latestTreeVersion]
@@ -1177,8 +1259,22 @@ function buildMode:OnFrame(inputEvents)
 	-- Update contents of main skill dropdowns
 	self:RefreshSkillSelectControls(self.controls, self.mainSocketGroup, "")
 
+	-- Handle sidebar drag
+	if self.controls.sideBarDragger.dragging then
+		local cursorX, _ = GetCursorPos()
+		main.sideBarWidth = m_max(250, m_min(cursorX, 600))
+		local sideBarW = main.sideBarWidth - 12
+		self.controls.mainSkillLabel.width = sideBarW
+		self.controls.mainSocketGroup.width = sideBarW
+		self.controls.mainSkill.width = sideBarW
+		self.controls.mainSkillPart.width = sideBarW
+		local colX = m_floor(sideBarW * 170 / 300)
+		self.controls.statBox.columns[1].x = colX
+		self.controls.statBox.columns[2].x = colX + 4
+	end
+
 	-- Draw contents of current tab
-	local sideBarWidth = 312
+	local sideBarWidth = main.sideBarWidth
 	local tabViewPort = {
 		x = sideBarWidth,
 		y = 32,
@@ -1559,7 +1655,7 @@ function buildMode:FormatStat(statData, statVal, overCapStatVal, colorOverride)
 end
 
 -- Add stat list for given actor
-function buildMode:AddDisplayStatList(statList, actor)
+function buildMode:AddDisplayStatList(statList, actor, snapOutput)
 	local statBoxList = self.controls.statBox.list
 	for index, statData in ipairs(statList) do
 		if matchFlags(statData.flag, statData.notFlag, actor.mainSkill.skillFlags) then
@@ -1613,10 +1709,29 @@ function buildMode:AddDisplayStatList(statList, actor)
 						if actor.output[statData.stat.."Warning"] or (statData.warnFunc and statData.warnFunc(statVal, actor.output) and statData.warnColor) then
 							colorOverride = colorCodes.NEGATIVE
 						end
+						local valStr = self:FormatStat(statData, statVal, overCapStatVal, colorOverride)
+						-- Append comparison delta if snapshot exists
+						if snapOutput and not statData.childStat then
+							local snapVal = snapOutput[statData.stat] or 0
+							if type(snapVal) == "number" and type(statVal) == "number" then
+								local diff = statVal - snapVal
+								if diff > 0.001 or diff < -0.001 then
+									local color = ((statData.lowerIsBetter and diff < 0) or (not statData.lowerIsBetter and diff > 0)) and colorCodes.POSITIVE or colorCodes.NEGATIVE
+									local val = diff * ((statData.pc or statData.mod) and 100 or 1)
+									local deltaStr = s_format("%+"..statData.fmt, val)
+									local number, suffix = deltaStr:match("^([%+%-]?%d+%.%d+)(%D*)$")
+									if number then
+										deltaStr = number:gsub("0+$", ""):gsub("%.$", "") .. suffix
+									end
+									deltaStr = formatNumSep(deltaStr)
+									valStr = valStr .. " " .. color .. "(" .. deltaStr .. ")"
+								end
+							end
+						end
 						t_insert(statBoxList, {
 							height = 16,
 							labelColor..statData.label..":",
-							self:FormatStat(statData, statVal, overCapStatVal, colorOverride),
+							valStr,
 						})
 					end
 				end
@@ -1674,6 +1789,138 @@ function buildMode:AddDisplayStatList(statList, actor)
 	end
 end
 
+function buildMode:OpenCompareBuildPopup()
+	local controls = { }
+	controls.label = new("LabelControl", nil, {0, 20, 0, 16}, "^7Paste a build code below, or select a build file:")
+	controls.codeInput = new("EditControl", nil, {0, 46, 450, 20}, "", nil, nil, nil, nil, nil, nil, true)
+	controls.codeInput.placeholder = "Paste build code here..."
+	controls.compareCode = new("ButtonControl", nil, {-80, 76, 140, 20}, "Compare Code", function()
+		local code = controls.codeInput.buf
+		if code and code:match("%S") then
+			main:ClosePopup()
+			self:LoadCompareFromCode(code)
+		end
+	end)
+	controls.compareCode.enabled = function()
+		return controls.codeInput.buf and controls.codeInput.buf:match("%S") ~= nil
+	end
+	controls.compareFile = new("ButtonControl", nil, {80, 76, 140, 20}, "Compare File...", function()
+		main:ClosePopup()
+		self:OpenCompareFilePicker()
+	end)
+	controls.close = new("ButtonControl", nil, {0, 106, 80, 20}, "Cancel", function()
+		main:ClosePopup()
+	end)
+	main:OpenPopup(500, 136, "Compare Build", controls)
+end
+
+function buildMode:LoadCompareFromCode(code)
+	local xmlText = Inflate(common.base64.decode(code:gsub("-","+"):gsub("_","/")))
+	if not xmlText then
+		launch:ShowErrMsg("^1Invalid build code - could not decode")
+		return
+	end
+	self:LoadCompareFromXML(xmlText, "Build Code")
+end
+
+function buildMode:LoadCompareFromXML(xmlText, label)
+	-- Save current build state
+	local savedXML = self:SaveDB("compare")
+	if not savedXML then
+		launch:ShowErrMsg("^1Failed to save current build for comparison")
+		return
+	end
+	local savedViewMode = self.viewMode
+	local savedDbFileName = self.dbFileName
+	local savedBuildName = self.buildName
+
+	-- Capture current input state for structural diff
+	local savedInputState = nil
+	if self.buildCompare then
+		savedInputState = self.buildCompare.captureState(self)
+	end
+
+	-- Teardown current build and load comparison build
+	self:Shutdown()
+	self:Init(false, "Compare Temp", xmlText, false)
+
+	-- Capture comparison output
+	local compareOutput = copyTableSafe(self.calcsTab.mainOutput)
+
+	-- Capture comparison input state for structural diff
+	local compareInputState = nil
+	if self.buildCompare then
+		compareInputState = self.buildCompare.captureState(self)
+	end
+
+	-- Teardown comparison build and reload original
+	self:Shutdown()
+	self:Init(savedDbFileName, savedBuildName, savedXML, false)
+
+	-- Restore view mode
+	self.viewMode = savedViewMode
+
+	-- Set comparison data (snapshot = comparison build, so deltas show current vs comparison)
+	self.compareSnapshot = compareOutput
+	self.compareLabel = label
+	-- For structural diff, show what differs between comparison and current
+	if compareInputState then
+		self.compareInputState = compareInputState
+	end
+
+	self:RefreshStatList()
+end
+
+function buildMode:OpenCompareFilePicker()
+	local controls = { }
+	local buildList = { }
+
+	-- Scan for build files
+	local handle = NewFileSearch(main.buildPath.."*.xml")
+	while handle do
+		local fileName = handle:GetFileName()
+		local buildName = fileName:gsub("%.xml$", "")
+		t_insert(buildList, { name = buildName, file = main.buildPath..fileName })
+		if not handle:NextFile() then
+			break
+		end
+	end
+
+	if #buildList == 0 then
+		launch:ShowErrMsg("^1No saved builds found in build folder")
+		return
+	end
+
+	t_sort(buildList, function(a, b) return a.name < b.name end)
+
+	local dropList = { }
+	for i, build in ipairs(buildList) do
+		t_insert(dropList, build.name)
+	end
+
+	controls.label = new("LabelControl", nil, {0, 20, 0, 16}, "^7Select a build to compare against:")
+	controls.buildSelect = new("DropDownControl", nil, {0, 46, 400, 20}, dropList)
+	controls.compare = new("ButtonControl", nil, {-50, 76, 80, 20}, "Compare", function()
+		local selIndex = controls.buildSelect.selIndex
+		local selBuild = buildList[selIndex]
+		if selBuild then
+			local file = io.open(selBuild.file, "r")
+			if file then
+				local xmlText = file:read("*a")
+				file:close()
+				main:ClosePopup()
+				self:LoadCompareFromXML(xmlText, selBuild.name)
+			else
+				launch:ShowErrMsg("^1Could not read file: "..selBuild.file)
+			end
+		end
+	end)
+	controls.close = new("ButtonControl", nil, {50, 76, 80, 20}, "Cancel", function()
+		main:ClosePopup()
+	end)
+	main:OpenPopup(450, 106, "Compare Build File", controls)
+end
+
 function buildMode:InsertItemWarnings()
 	if self.calcsTab.mainEnv.itemWarnings.jewelLimitWarning then
 		for _, warning in ipairs(self.calcsTab.mainEnv.itemWarnings.jewelLimitWarning) do
@@ -1691,6 +1938,9 @@ end
 function buildMode:RefreshStatList()
 	self.controls.warnings.lines = {}
 	local statBoxList = wipeTable(self.controls.statBox.list)
+	-- Determine snapshot sub-outputs for player and minion
+	local snapPlayer = self.compareSnapshot
+	local snapMinion = self.compareSnapshot and self.compareSnapshot.Minion or nil
 	if self.calcsTab.mainEnv.player.mainSkill.infoMessage then
 			if #self.calcsTab.mainEnv.player.mainSkill.infoMessage > 40 then
 				for line in string.gmatch(self.calcsTab.mainEnv.player.mainSkill.infoMessage, "([^:]+)") do
@@ -1718,7 +1968,7 @@ function buildMode:RefreshStatList()
 				t_insert(statBoxList, { height = 14, align = "CENTER_X", x = 140, "^8" .. self.calcsTab.mainEnv.minion.mainSkill.infoMessage2})
 			end
 		end
-		self:AddDisplayStatList(self.minionDisplayStats, self.calcsTab.mainEnv.minion)
+		self:AddDisplayStatList(self.minionDisplayStats, self.calcsTab.mainEnv.minion, snapMinion)
 		t_insert(statBoxList, { height = 10 })
 		t_insert(statBoxList, { height = 18, "^7Player:" })
 	end
@@ -1726,8 +1976,45 @@ function buildMode:RefreshStatList()
 		t_insert(statBoxList, { height = 16, "^7Skill disabled:" })
 		t_insert(statBoxList, { height = 14, align = "CENTER_X", x = 140, self.calcsTab.mainEnv.player.mainSkill.disableReason })
 	end
-	self:AddDisplayStatList(self.displayStats, self.calcsTab.mainEnv.player)
+	self:AddDisplayStatList(self.displayStats, self.calcsTab.mainEnv.player, snapPlayer)
 	self:InsertItemWarnings()
+	-- Comparison footer and structural diff
+	if self.compareSnapshot and self.compareLabel then
+		t_insert(statBoxList, { height = 10 })
+		t_insert(statBoxList, { height = 16, align = "CENTER_X", x = 140, "^7Comparing to: "..self.compareLabel })
+	end
+	if self.compareSnapshot and self.compareInputState and self.buildCompare then
+		local liveState = self.buildCompare.captureState(self)
+		local diffs = self.buildCompare.diffStates(self.compareInputState, liveState)
+		local hasChanges = (#diffs.addedNodes > 0 or #diffs.removedNodes > 0 or #diffs.changedSlots > 0 or #diffs.changedConfig > 0)
+		if hasChanges then
+			t_insert(statBoxList, { height = 10 })
+			t_insert(statBoxList, { height = 16, "^7What Changed:" })
+		end
+		if #diffs.addedNodes > 0 or #diffs.removedNodes > 0 then
+			t_insert(statBoxList, { height = 14, "^x808080Tree Changes:" })
+			for _, name in ipairs(diffs.addedNodes) do
+				t_insert(statBoxList, { height = 14, colorCodes.POSITIVE.."  + "..name })
+			end
+			for _, name in ipairs(diffs.removedNodes) do
+				t_insert(statBoxList, { height = 14, colorCodes.NEGATIVE.."  - "..name })
+			end
+		end
+		if #diffs.changedSlots > 0 then
+			t_insert(statBoxList, { height = 14, "^x808080Item Changes:" })
+			for _, change in ipairs(diffs.changedSlots) do
+				t_insert(statBoxList, { height = 14, "^7  "..change.slot..": "..colorCodes.NEGATIVE..(change.from or "empty")..
+					"^7 -> "..colorCodes.POSITIVE..(change.to or "empty") })
+			end
+		end
+		if #diffs.changedConfig > 0 then
+			t_insert(statBoxList, { height = 14, "^x808080Config Changes:" })
+			for _, change in ipairs(diffs.changedConfig) do
+				t_insert(statBoxList, { height = 14, "^7  "..change.key..": "..colorCodes.NEGATIVE..tostring(change.from)..
+					"^7 -> "..colorCodes.POSITIVE..tostring(change.to) })
+			end
+		end
+	end
 end
 
 function buildMode:CompareStatList(tooltip, statList, actor, baseOutput, compareOutput, header, nodeCount)
