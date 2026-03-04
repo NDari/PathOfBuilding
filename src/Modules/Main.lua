@@ -204,13 +204,14 @@ function main:Init()
 	self.controls.about = new("ButtonControl", {"BOTTOMLEFT",self.anchorMain,"BOTTOMLEFT"}, {72, 0, 68, 20}, "About", function()
 		self:OpenAboutPopup()
 	end)
-	self.controls.applyUpdate = new("ButtonControl", {"BOTTOMLEFT",self.anchorMain,"BOTTOMLEFT"}, {0, -24, 140, 20}, "^x50E050Update Ready", function()
+	local loveYShift = LOVE_VERSION_TAG and -16 or 0
+	self.controls.applyUpdate = new("ButtonControl", {"BOTTOMLEFT",self.anchorMain,"BOTTOMLEFT"}, {0, -24 + loveYShift, 140, 20}, "^x50E050Update Ready", function()
 		self:OpenUpdatePopup()
 	end)
 	self.controls.applyUpdate.shown = function()
 		return launch.updateAvailable and launch.updateAvailable ~= "none"
 	end
-	self.controls.checkUpdate = new("ButtonControl", {"BOTTOMLEFT",self.anchorMain,"BOTTOMLEFT"}, {0, -24, 140, 20}, "", function()
+	self.controls.checkUpdate = new("ButtonControl", {"BOTTOMLEFT",self.anchorMain,"BOTTOMLEFT"}, {0, -24 + loveYShift, 140, 20}, "", function()
 		launch:CheckForUpdate()
 	end)
 	self.controls.checkUpdate.shown = function()
@@ -222,15 +223,21 @@ function main:Init()
 	self.controls.checkUpdate.enabled = function()
 		return not launch.updateCheckRunning
 	end
-	self.controls.forkLabel = new("LabelControl", {"BOTTOMLEFT",self.anchorMain,"BOTTOMLEFT"}, {148, -26, 0, 16}, "")
+	self.controls.forkLabel = new("LabelControl", {"BOTTOMLEFT",self.anchorMain,"BOTTOMLEFT"}, {148, LOVE_VERSION_TAG and -42 or -26, 0, 16}, "")
 	self.controls.forkLabel.label = function()
 		return "^8PoB Community Fork"
 	end
-	self.controls.versionLabel = new("LabelControl", {"BOTTOMLEFT",self.anchorMain,"BOTTOMLEFT"}, {148, -2, 0, 16}, "")
+	self.controls.versionLabel = new("LabelControl", {"BOTTOMLEFT",self.anchorMain,"BOTTOMLEFT"}, {148, LOVE_VERSION_TAG and -18 or -2, 0, 16}, "")
 	self.controls.versionLabel.label = function()
 		return "^8" .. (launch.versionBranch == "beta" and "Beta: " or "Version: ") .. launch.versionNumber .. (launch.versionBranch == "dev" and " (Dev)" or "")
 	end
-	self.controls.devMode = new("LabelControl", {"BOTTOMLEFT",self.anchorMain,"BOTTOMLEFT"}, {0, -26, 0, 20}, colorCodes.NEGATIVE.."Dev Mode")
+	if LOVE_VERSION_TAG then
+		self.controls.loveVersionLabel = new("LabelControl", {"BOTTOMLEFT",self.anchorMain,"BOTTOMLEFT"}, {148, -2, 0, 16}, "")
+		self.controls.loveVersionLabel.label = function()
+			return "^8" .. LOVE_VERSION_TAG
+		end
+	end
+	self.controls.devMode = new("LabelControl", {"BOTTOMLEFT",self.anchorMain,"BOTTOMLEFT"}, {0, -26 + loveYShift, 0, 20}, colorCodes.NEGATIVE.."Dev Mode")
 	self.controls.devMode.shown = function()
 		return launch.devMode
 	end
@@ -242,7 +249,8 @@ function main:Init()
 		return self.toastMode == "SHOWN"
 	end
 
-	self.mainBarHeight = 58
+	self.mainBarHeightBase = LOVE_VERSION_TAG and 74 or 58
+	self.mainBarHeight = self.mainBarHeightBase
 	self.toastMessages = { }
 
 	if launch.devMode and GetTime() >= 0 and GetTime() < 15000 then
@@ -397,19 +405,19 @@ function main:OnFrame()
 			if now >= self.toastStart + 250 then
 				self.toastMode = "SHOWN"
 			else
-				self.mainBarHeight = 58 + self.toastHeight * (now - self.toastStart) / 250
+				self.mainBarHeight = self.mainBarHeightBase + self.toastHeight * (now - self.toastStart) / 250
 			end
 		end
 		if self.toastMode == "SHOWN" then
-			self.mainBarHeight = 58 + self.toastHeight
+			self.mainBarHeight = self.mainBarHeightBase + self.toastHeight
 		elseif self.toastMode == "HIDING" then
 			local now = GetTime()
 			if now >= self.toastStart + 75 then
 				self.toastMode = nil
-				self.mainBarHeight = 58
+				self.mainBarHeight = self.mainBarHeightBase
 				t_remove(self.toastMessages, 1)
 			else
-				self.mainBarHeight = 58 + self.toastHeight * (1 - (now - self.toastStart) / 75)
+				self.mainBarHeight = self.mainBarHeightBase + self.toastHeight * (1 - (now - self.toastStart) / 75)
 			end
 		end
 		if self.toastMode then
@@ -425,9 +433,9 @@ function main:OnFrame()
 
 	-- Draw main controls
 	SetDrawColor(0.85, 0.85, 0.85)
-	DrawImage(nil, 0, self.screenH - 58, 312, 58)
+	DrawImage(nil, 0, self.screenH - self.mainBarHeightBase, 312, self.mainBarHeightBase)
 	SetDrawColor(0.1, 0.1, 0.1)
-	DrawImage(nil, 0, self.screenH - 54, 308, 54)
+	DrawImage(nil, 0, self.screenH - self.mainBarHeightBase + 4, 308, self.mainBarHeightBase - 4)
 	self:DrawControls(self.viewPort)
 
 	if self.popups[1] then
@@ -662,7 +670,7 @@ function main:LoadSettings(ignoreBuild)
 					SetDPIScaleOverridePercent(self.dpiScaleOverridePercent)
 				end
 				if node.attrib.sideBarWidth then
-					self.sideBarWidth = m_max(250, m_min(tonumber(node.attrib.sideBarWidth) or 312, 600))
+					self.sideBarWidth = m_max(320, m_min(tonumber(node.attrib.sideBarWidth) or 312, 600))
 				end
 			end
 		end
