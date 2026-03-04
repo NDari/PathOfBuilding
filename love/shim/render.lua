@@ -14,6 +14,7 @@ local CMD_SCISSOR = 6
 local CMD_SCISSOR_RESET = 7
 local CMD_BLEND = 8
 local CMD_TEXT = 9
+local CMD_POLYGON = 10
 
 -- Current state
 local currentColor = { 1, 1, 1, 1 }
@@ -153,6 +154,10 @@ function M.inject()
 			addCommand(CMD_MESH, imgHandle,
 				x1, y1, x2, y2, x3, y3, x4, y4,
 				s1 or 0, t1 or 0, s2 or 1, t2 or 0, s3 or 1, t3 or 1, s4 or 0, t4 or 1)
+		elseif not imgHandle then
+			-- Solid colored quad (no texture)
+			emitColor()
+			addCommand(CMD_POLYGON, x1, y1, x2, y2, x3, y3, x4, y4)
 		end
 	end
 
@@ -277,6 +282,9 @@ function M.executeDrawCommands()
 						cmd[15], cmd[16], cmd[17], cmd[18])
 					love.graphics.draw(mesh)
 				end
+
+			elseif cmdType == CMD_POLYGON then
+				love.graphics.polygon("fill", cmd[2], cmd[3], cmd[4], cmd[5], cmd[6], cmd[7], cmd[8], cmd[9])
 
 			elseif cmdType == CMD_SCISSOR then
 				-- SetViewport in SimpleGraphic sets clip rect AND translates origin

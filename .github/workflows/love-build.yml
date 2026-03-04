@@ -20,6 +20,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Inject version tag
+        run: sed -i "s/LOVE_VERSION_TAG = \"love-v[^\"]*\"/LOVE_VERSION_TAG = \"${GITHUB_REF_NAME}\"/" love/shim/init.lua
+
       - name: Create .love file
         run: |
           cd love

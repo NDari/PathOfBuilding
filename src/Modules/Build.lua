@@ -1262,7 +1262,7 @@ function buildMode:OnFrame(inputEvents)
 	-- Handle sidebar drag
 	if self.controls.sideBarDragger.dragging then
 		local cursorX, _ = GetCursorPos()
-		main.sideBarWidth = m_max(250, m_min(cursorX, 600))
+		main.sideBarWidth = m_max(320, m_min(cursorX, 600))
 		local sideBarW = main.sideBarWidth - 12
 		self.controls.mainSkillLabel.width = sideBarW
 		self.controls.mainSocketGroup.width = sideBarW
