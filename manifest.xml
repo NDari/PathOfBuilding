@@ -4,9 +4,24 @@
 	<Source part="default" url="https://raw.githubusercontent.com/NDari/PathOfBuilding/{branch}/" />
 	<Source part="program" url="https://raw.githubusercontent.com/NDari/PathOfBuilding/{branch}/src/" />
 	<Source part="tree" url="https://raw.githubusercontent.com/NDari/PathOfBuilding/{branch}/src/" />
+	<Source part="love" url="https://raw.githubusercontent.com/NDari/PathOfBuilding/{branch}/love/" />
 	<File name="changelog.txt" part="default" sha1="968c83984e54cb2d43032296405fe9f9701939c0" />
 	<File name="help.txt" part="default" sha1="b1287f429e40ffdb96a2aff30b20adfa1540cf66" />
 	<File name="LICENSE.md" part="default" sha1="be578b61d2b3381db4135c02101b2b0fc34fdeac" />
+	<File name="conf.lua" part="love" sha1="252cf72774f102166c30ff16c83c7aa30db5ef77" />
+	<File name="lib/lcurl/safe.lua" part="love" sha1="336bb0d24f5987084776fbd34e3796ea0b040c4c" />
+	<File name="lib/lua-utf8.lua" part="love" sha1="21d847c2aa57142e5103ba0e1c70df3e62c1ff95" />
+	<File name="lib/lzip.lua" part="love" sha1="45e6b52a99f6de6d34fec3b650c20042e3eaed3c" />
+	<File name="main.lua" part="love" sha1="45807dbcf2ae5fb701821ed3ec733e713e1e11c5" />
+	<File name="shim/compat.lua" part="love" sha1="026354681d543eb916db3c4f23d07a0af1b4ceb4" />
+	<File name="shim/filesearch.lua" part="love" sha1="93d4e267e1c1314bb08d48d406a84ea988bb912c" />
+	<File name="shim/image.lua" part="love" sha1="1b14d2e9912615b6c2f3e63daafb59898c2a2c76" />
+	<File name="shim/init.lua" part="love" sha1="0cc56c96ad4c53ccecea2cf5d93b17f07fd07d05" />
+	<File name="shim/input.lua" part="love" sha1="04ab5f232628017f2d8f28484dae66f72132e6ff" />
+	<File name="shim/render.lua" part="love" sha1="9c05d728cd33246aad03493ce238ba9759b9d857" />
+	<File name="shim/subscript.lua" part="love" sha1="f61d15fdad4dcd0c7a9515ddd8edd4c0d099b26c" />
+	<File name="shim/system.lua" part="love" sha1="c449162c3cb96d3449d7e7d5d0c63834b023da42" />
+	<File name="shim/text.lua" part="love" sha1="548e8d7192063f7c2312e6bee6c5b2a72e4ba871" />
 	<File name="Assets/ascendancypassiveheaderleft.png" part="program" sha1="6a65683dcc3b14382dc083198fe9361454e91b15" />
 	<File name="Assets/ascendancypassiveheadermiddle.png" part="program" sha1="79ccf100c4154d8f65544e2b32d44a612b7007c0" />
 	<File name="Assets/ascendancypassiveheaderright.png" part="program" sha1="dbb86c1b8b51019379e52cd1f8b2a9edee07a3f6" />
@@ -208,7 +223,7 @@
 	<File name="Data/Bosses.lua" part="program" sha1="852d54f7dd00f60860decb56ed1b23cb922e2c3e" />
 	<File name="Data/BossSkills.lua" part="program" sha1="c432174cc93b7737074fcdc122770fa9e021130d" />
 	<File name="Data/ClusterJewels.lua" part="program" sha1="2772566e0e0652e141323d07023f5a8be7d3c06c" />
-	<File name="Data/Costs.lua" part="program" sha1="d0a4d547ed97baef2d58c6835afe7bf7d59299d2" />
+	<File name="Data/Costs.lua" part="program" sha1="8f04f0f16bb9f1f534ec15a7f52aee9102ff525a" />
 	<File name="Data/Crucible.lua" part="program" sha1="a7786406a4b5a06395d6c6badb52ba37f8e826a9" />
 	<File name="Data/EnchantmentBelt.lua" part="program" sha1="991b71ed3eec08b9e2f1e0a2848b5b7c4ac977a2" />
 	<File name="Data/EnchantmentBody.lua" part="program" sha1="c66f45fdb8a468ca16dc5bd1325bec0add01288c" />
@@ -344,7 +359,7 @@
 	<File name="Modules/PantheonTools.lua" part="program" sha1="1a1ae1e7f7032b93e5c5d462365cc85c3f3e8b2c" />
 	<File name="Modules/StatDescriber.lua" part="program" sha1="03824f856f8361efc2a3902c2d4a4a7c88a8ad25" />
 	<File name="UpdateApply.lua" part="program" sha1="fd03dbd5b750848ec7d9d1a8bcf8aff8b9ff6e89" />
-	<File name="UpdateCheck.lua" part="program" sha1="30a1c9b18c5739d8ce9d801ab269acff9920045a" />
+	<File name="UpdateCheck.lua" part="program" sha1="2e32af913834cf66d523d1aa35094ddbaf812f50" />
 	<File name="TreeData/2_6/skill_sprite-3-32f639bbfc42783ca7ec218a787dd918.jpg" part="tree" sha1="dc7a2a0383847ac28eade8a31a57a8bfa7b298e4" />
 	<File name="TreeData/2_6/skill_sprite-active-3-3e73c4c4534433ecfc340c7287093bd5.png" part="tree" sha1="baa878007cfac73bee50958d25617b95c0e73a2d" />
 	<File name="TreeData/2_6/skill_sprite-active-3-7798fabab8a21829831293c20ac9c414.jpg" part="tree" sha1="526654400851f032d3d2f46980c0ecc077aa0c4c" />
