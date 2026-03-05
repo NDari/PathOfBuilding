@@ -1,3 +1,4 @@
+-- cspell:words LÖVE filesearch cext
 -- shim/init.lua
 -- Master shim module: loads all sub-modules and injects SimpleGraphic API into _G.
 -- This is the bridge between LÖVE and the SimpleGraphic API that PoB expects.
@@ -25,10 +26,9 @@ function M.runCallback(name, ...)
 end
 
 function M.init(loveSource, srcPath, baseDir)
-	-- loveSource: love/ directory (dev) or exe path (fused)
+	-- loveSource: love/ game directory (both dev and distribution)
 	-- srcPath:    path to src/ directory
-	-- baseDir:    parent of src/, runtime/, and (in fused mode) lib/
-	--             In dev mode: love/..   In fused mode: directory containing the exe
+	-- baseDir:    parent of src/, runtime/, love/
 
 	-- Initialize sub-modules
 	system.init(loveSource, srcPath)
@@ -37,13 +37,8 @@ function M.init(loveSource, srcPath, baseDir)
 	input.init()
 
 	-- Set up package paths for PoB's Lua modules and pure Lua libraries
-	-- In dev mode, lib/ is inside love/; in fused mode, lib/ is alongside the exe
-	local libPath
-	if love.filesystem.isFused() then
-		libPath = baseDir .. "/lib"
-	else
-		libPath = loveSource .. "/lib"
-	end
+	-- lib/ is always inside the love/ game directory (both dev and distribution)
+	local libPath = loveSource .. "/lib"
 	local runtimeLuaPath = baseDir .. "/runtime/lua"
 
 	package.path = libPath .. "/?.lua;"
