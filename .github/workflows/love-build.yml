@@ -72,8 +72,9 @@ jobs:
           cp -r love/lib dist/PathOfBuilding/love/lib
 
           # PoB source and data
-          cp -r src dist/PathOfBuilding/src
-          cp -r runtime/lua dist/PathOfBuilding/runtime/lua
+          cp -r src/. dist/PathOfBuilding/src
+          mkdir -p dist/PathOfBuilding/runtime/lua
+          cp -r runtime/lua/. dist/PathOfBuilding/runtime/lua
 
           # Manifest (into src/ where UpdateCheck.lua expects it)
           cp manifest.xml dist/PathOfBuilding/src/manifest.xml
@@ -150,8 +151,9 @@ jobs:
           cp -r love/lib dist/PathOfBuilding/love/lib
 
           # PoB source and data
-          cp -r src dist/PathOfBuilding/src
-          cp -r runtime/lua dist/PathOfBuilding/runtime/lua
+          cp -r src/. dist/PathOfBuilding/src
+          mkdir -p dist/PathOfBuilding/runtime/lua
+          cp -r runtime/lua/. dist/PathOfBuilding/runtime/lua
 
           # Manifest
           cp manifest.xml dist/PathOfBuilding/src/manifest.xml
