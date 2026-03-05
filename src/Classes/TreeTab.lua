@@ -457,7 +457,13 @@ function TreeTabClass:Draw(viewPort, inputEvents)
 		self.viewer:Focus(self.jumpToX, self.jumpToY, treeViewPort, self.build)
 		self.jumpToNode = false
 	end
-	self.viewer.compareSpec = self.isComparing and self.specList[self.activeCompareSpec] or nil
+	if self.isComparing then
+		self.viewer.compareSpec = self.specList[self.activeCompareSpec]
+	elseif self.build.compareTreeProxy and self.build.compareTreeProxy.treeVersion == self.build.spec.treeVersion then
+		self.viewer.compareSpec = self.build.compareTreeProxy
+	else
+		self.viewer.compareSpec = nil
+	end
 	self.viewer:Draw(self.build, treeViewPort, inputEvents)
 
 	local newSpecList = self:GetSpecList()

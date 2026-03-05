@@ -77,6 +77,7 @@ function buildMode:Init(dbFileName, buildName, buildXML, convertBuild, importLin
 	self.compareSnapshot = nil
 	self.compareLabel = nil
 	self.compareInputState = nil
+	self.compareTreeProxy = nil
 	self.characterLevel = m_min(m_max(main.defaultCharLevel or 1, 1), 100)
 	self.targetVersion = liveTargetVersion
 	self.bandit = "None"
@@ -492,6 +493,7 @@ function buildMode:Init(dbFileName, buildName, buildXML, convertBuild, importLin
 			self.compareSnapshot = nil
 			self.compareLabel = nil
 			self.compareInputState = nil
+			self.compareTreeProxy = nil
 		else
 			if not self.calcsTab or not self.calcsTab.mainOutput then
 				return
@@ -501,6 +503,12 @@ function buildMode:Init(dbFileName, buildName, buildXML, convertBuild, importLin
 			if self.buildCompare then
 				self.compareInputState = self.buildCompare.captureState(self)
 			end
+			-- Build tree comparison proxy from current allocated nodes
+			local allocData = {}
+			for nodeId, node in pairs(self.spec.allocNodes) do
+				allocData[nodeId] = { sd = node.sd }
+			end
+			self.compareTreeProxy = self:BuildCompareTreeProxy(allocData)
 		end
 		self:RefreshStatList()
 	end)
@@ -1823,6 +1831,18 @@ function buildMode:LoadCompareFromCode(code)
 	self:LoadCompareFromXML(xmlText, "Build Code")
 end
 
+function buildMode:BuildCompareTreeProxy(allocData)
+	local proxyNodes = {}
+	for nodeId, node in pairs(self.spec.nodes) do
+		local data = allocData[nodeId]
+		proxyNodes[nodeId] = setmetatable({
+			alloc = data ~= nil,
+			sd = data and data.sd or nil,
+		}, { __index = node })
+	end
+	return { nodes = proxyNodes, treeVersion = self.spec.treeVersion }
+end
+
 function buildMode:LoadCompareFromXML(xmlText, label)
 	-- Save current build state
 	local savedXML = self:SaveDB("compare")
@@ -1853,6 +1873,13 @@ function buildMode:LoadCompareFromXML(xmlText, label)
 		compareInputState = self.buildCompare.captureState(self)
 	end
 
+	-- Capture comparison build's allocated nodes for tree diff
+	local compareAllocData = {}
+	local compareTreeVersion = self.spec.treeVersion
+	for nodeId, node in pairs(self.spec.allocNodes) do
+		compareAllocData[nodeId] = { sd = node.sd }
+	end
+
 	-- Teardown comparison build and reload original
 	self:Shutdown()
 	self:Init(savedDbFileName, savedBuildName, savedXML, false)
@@ -1866,6 +1893,13 @@ function buildMode:LoadCompareFromXML(xmlText, label)
 	-- For structural diff, show what differs between comparison and current
 	if compareInputState then
 		self.compareInputState = compareInputState
+	end
+
+	-- Build tree comparison proxy if tree versions match
+	if compareTreeVersion == self.spec.treeVersion then
+		self.compareTreeProxy = self:BuildCompareTreeProxy(compareAllocData)
+	else
+		self.compareTreeProxy = nil
 	end
 
 	self:RefreshStatList()

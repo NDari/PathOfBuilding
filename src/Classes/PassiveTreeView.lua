@@ -514,11 +514,13 @@ function PassiveTreeViewClass:Draw(build, viewPort, inputEvents)
 		end
 
 		if baseState == "Active" and state ~= "Active" then
+			-- Was connected in baseline, now removed — color red
 			state = "Active"
-			setConnectorColor(0, 1, 0)
+			setConnectorColor(1, 0, 0)
 		end
 		if baseState ~= "Active" and state == "Active" then
-			setConnectorColor(1, 0, 0)
+			-- Newly connected since baseline — color green
+			setConnectorColor(0, 1, 0)
 		end
 
 		-- Convert vertex coordinates to screen-space and add them to the coordinate array
@@ -725,11 +727,11 @@ function PassiveTreeViewClass:Draw(build, viewPort, inputEvents)
 			else
 				if compareNode then
 					if compareNode.alloc and not node.alloc then
-						-- Base has, current has not, color green (take these nodes to match)
-						SetDrawColor(0, 1, 0)
-					elseif not compareNode.alloc and node.alloc then
-						-- Base has not, current has, color red (Remove nodes to match)
+						-- Was allocated in baseline, now removed — color red
 						SetDrawColor(1, 0, 0)
+					elseif not compareNode.alloc and node.alloc then
+						-- Newly allocated since baseline — color green
+						SetDrawColor(0, 1, 0)
 					elseif node.type == "Mastery" and compareNode.alloc and node.alloc and node.sd ~= compareNode.sd then
 						-- Node is a mastery, both have it allocated, but mastery changed, color it blue
 						SetDrawColor(0, 0, 1)
@@ -753,11 +755,11 @@ function PassiveTreeViewClass:Draw(build, viewPort, inputEvents)
 		else
 			if compareNode then
 				if compareNode.alloc and not node.alloc then
-					-- Base has, current has not, color green (take these nodes to match)
-					SetDrawColor(0, 1, 0)
-				elseif not compareNode.alloc and node.alloc then
-					-- Base has not, current has, color red (Remove nodes to match)
+					-- Was allocated in baseline, now removed — color red
 					SetDrawColor(1, 0, 0)
+				elseif not compareNode.alloc and node.alloc then
+					-- Newly allocated since baseline — color green
+					SetDrawColor(0, 1, 0)
 				elseif node.type == "Mastery" and compareNode.alloc and node.alloc and node.sd ~= compareNode.sd then
 					-- Node is a mastery, both have it allocated, but mastery changed, color it blue
 					SetDrawColor(0, 0, 1)
