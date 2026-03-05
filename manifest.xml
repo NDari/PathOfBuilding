@@ -16,7 +16,7 @@
 	<File name="shim/compat.lua" part="love" sha1="026354681d543eb916db3c4f23d07a0af1b4ceb4" />
 	<File name="shim/filesearch.lua" part="love" sha1="93d4e267e1c1314bb08d48d406a84ea988bb912c" />
 	<File name="shim/image.lua" part="love" sha1="1b14d2e9912615b6c2f3e63daafb59898c2a2c76" />
-	<File name="shim/init.lua" part="love" sha1="0cc56c96ad4c53ccecea2cf5d93b17f07fd07d05" />
+	<File name="shim/init.lua" part="love" sha1="efecd8c53d16f6abffaa4427da16fe0e61ce2a90" />
 	<File name="shim/input.lua" part="love" sha1="04ab5f232628017f2d8f28484dae66f72132e6ff" />
 	<File name="shim/render.lua" part="love" sha1="9c05d728cd33246aad03493ce238ba9759b9d857" />
 	<File name="shim/subscript.lua" part="love" sha1="f61d15fdad4dcd0c7a9515ddd8edd4c0d099b26c" />
@@ -223,7 +223,7 @@
 	<File name="Data/Bosses.lua" part="program" sha1="852d54f7dd00f60860decb56ed1b23cb922e2c3e" />
 	<File name="Data/BossSkills.lua" part="program" sha1="c432174cc93b7737074fcdc122770fa9e021130d" />
 	<File name="Data/ClusterJewels.lua" part="program" sha1="2772566e0e0652e141323d07023f5a8be7d3c06c" />
-	<File name="Data/Costs.lua" part="program" sha1="8f04f0f16bb9f1f534ec15a7f52aee9102ff525a" />
+	<File name="Data/Costs.lua" part="program" sha1="a1e7079ed75e438fff49135d01aaf91822f73c56" />
 	<File name="Data/Crucible.lua" part="program" sha1="a7786406a4b5a06395d6c6badb52ba37f8e826a9" />
 	<File name="Data/EnchantmentBelt.lua" part="program" sha1="991b71ed3eec08b9e2f1e0a2848b5b7c4ac977a2" />
 	<File name="Data/EnchantmentBody.lua" part="program" sha1="c66f45fdb8a468ca16dc5bd1325bec0add01288c" />
