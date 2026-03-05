@@ -1,4 +1,4 @@
-# cspell:words LÖVE appimage softprops mingw
+# cspell:words LÖVE appimage softprops mingw mwindows
 name: Build LÖVE Frontend
 
 on:

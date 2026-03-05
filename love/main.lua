@@ -1,3 +1,4 @@
+-- cspell:words LÖVE
 -- LOVE entry point for Path of Building
 -- Custom love.run() that mirrors SimpleGraphic's callback model
 

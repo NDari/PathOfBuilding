@@ -1,3 +1,4 @@
+-- cspell:words LÖVE filesearch cext
 -- shim/init.lua
 -- Master shim module: loads all sub-modules and injects SimpleGraphic API into _G.
 -- This is the bridge between LÖVE and the SimpleGraphic API that PoB expects.
