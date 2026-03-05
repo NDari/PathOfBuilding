@@ -1,4 +1,4 @@
-# cspell:words LÖVE appimage softprops
+# cspell:words LÖVE appimage softprops mingw
 name: Build LÖVE Frontend
 
 on:
@@ -14,36 +14,15 @@ env:
 
 jobs:
   # ------------------------------------------------------------------
-  # Create the .love file (zip of love/ game directory)
+  # Windows x64
   # ------------------------------------------------------------------
-  create-love-file:
+  build-windows:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - name: Inject version tag
         run: sed -i "s/LOVE_VERSION_TAG = \"love-v[^\"]*\"/LOVE_VERSION_TAG = \"${GITHUB_REF_NAME}\"/" love/shim/init.lua
-
-      - name: Create .love file
-        run: |
-          cd love
-          zip -9 -r ../PathOfBuilding.love . \
-            -x "run.sh" -x "run.bat" -x "build-app-linux.sh" -x "build-app-windows.bat" -x "scripts/*"
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: love-file
-          path: PathOfBuilding.love
-          retention-days: 5
-
-  # ------------------------------------------------------------------
-  # Windows x64 — download LÖVE, fuse, package
-  # ------------------------------------------------------------------
-  build-windows:
-    needs: create-love-file
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
       - name: Download LÖVE
         run: |
@@ -52,9 +31,11 @@ jobs:
           unzip love-win64.zip
           mv "love-${{ env.LOVE_VERSION }}-win64" love-win64
 
-      - uses: actions/download-artifact@v4
-        with:
-          name: love-file
+      - name: Install cross-compiler
+        run: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64
+
+      - name: Compile stub launcher
+        run: x86_64-w64-mingw32-gcc -mwindows -O2 -o PathOfBuilding.exe love/launcher/launcher.c
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -66,42 +47,44 @@ jobs:
           bash love/scripts/generate-manifest.sh
           sed -i 's/branch="dev"/branch="master"/' manifest.xml
 
-      - name: Fuse and package
+      - name: Package
         run: |
-          mkdir -p dist/PathOfBuilding
-
-          # Fuse love.exe + .love → LOVE-PathOfBuilding.exe
-          cat love-win64/love.exe PathOfBuilding.love > dist/PathOfBuilding/LOVE-PathOfBuilding.exe
-
-          # Copy LÖVE runtime DLLs
-          for f in love-win64/*.dll; do
-            cp "$f" dist/PathOfBuilding/
-          done
-
-          # Copy LÖVE license
-          if [ -f love-win64/license.txt ]; then
-            cp love-win64/license.txt dist/PathOfBuilding/love-license.txt
-          fi
-
-          # Copy game data
-          cp -r src dist/PathOfBuilding/src
+          mkdir -p dist/PathOfBuilding/love-runtime
+          mkdir -p dist/PathOfBuilding/love
+          mkdir -p dist/PathOfBuilding/src
           mkdir -p dist/PathOfBuilding/runtime
-          cp -r runtime/lua dist/PathOfBuilding/runtime/lua
-          cp -r love/lib dist/PathOfBuilding/lib
 
-          # Copy manifest and default part files for auto-updates
-          if [ -f manifest.xml ]; then
-            cp manifest.xml dist/PathOfBuilding/src/manifest.xml
+          # Stub launcher
+          cp PathOfBuilding.exe dist/PathOfBuilding/
+
+          # LÖVE runtime
+          cp love-win64/love.exe dist/PathOfBuilding/love-runtime/
+          for f in love-win64/*.dll; do
+            cp "$f" dist/PathOfBuilding/love-runtime/
+          done
+          if [ -f love-win64/license.txt ]; then
+            cp love-win64/license.txt dist/PathOfBuilding/love-runtime/love-license.txt
           fi
+
+          # Game directory (love/) — auto-updatable
+          cp love/main.lua love/conf.lua dist/PathOfBuilding/love/
+          cp -r love/shim dist/PathOfBuilding/love/shim
+          cp -r love/lib dist/PathOfBuilding/love/lib
+
+          # PoB source and data
+          cp -r src dist/PathOfBuilding/src
+          cp -r runtime/lua dist/PathOfBuilding/runtime/lua
+
+          # Manifest (into src/ where UpdateCheck.lua expects it)
+          cp manifest.xml dist/PathOfBuilding/src/manifest.xml
+
+          # Default part files
           for f in changelog.txt help.txt LICENSE.md; do
             [ -f "$f" ] && cp "$f" dist/PathOfBuilding/src/"$f"
           done
 
-          # Copy launcher and license
-          cp love/run.bat dist/PathOfBuilding/
-          if [ -f LICENSE.md ]; then
-            cp LICENSE.md dist/PathOfBuilding/
-          fi
+          # License at top level
+          [ -f LICENSE.md ] && cp LICENSE.md dist/PathOfBuilding/
 
       - name: Create zip
         run: |
@@ -121,13 +104,15 @@ jobs:
           retention-days: 5
 
   # ------------------------------------------------------------------
-  # Linux x64 — download LÖVE AppImage, extract, fuse, package
+  # Linux x64
   # ------------------------------------------------------------------
   build-linux:
-    needs: create-love-file
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Inject version tag
+        run: sed -i "s/LOVE_VERSION_TAG = \"love-v[^\"]*\"/LOVE_VERSION_TAG = \"${GITHUB_REF_NAME}\"/" love/shim/init.lua
 
       - name: Download and extract LÖVE AppImage
         run: |
@@ -136,10 +121,6 @@ jobs:
           chmod +x love.AppImage
           ./love.AppImage --appimage-extract
           mv squashfs-root love-extracted
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: love-file
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -151,44 +132,46 @@ jobs:
           bash love/scripts/generate-manifest.sh
           sed -i 's/branch="dev"/branch="master"/' manifest.xml
 
-      - name: Fuse and package
+      - name: Package
         run: |
-          mkdir -p dist/PathOfBuilding/runtime dist/PathOfBuilding/love-runtime
+          mkdir -p dist/PathOfBuilding/love-runtime
+          mkdir -p dist/PathOfBuilding/love
+          mkdir -p dist/PathOfBuilding/src
+          mkdir -p dist/PathOfBuilding/runtime
 
-          # Copy LÖVE shared libraries
+          # LÖVE runtime (binary + shared libs)
+          cp love-extracted/bin/love dist/PathOfBuilding/love-runtime/love
+          chmod +x dist/PathOfBuilding/love-runtime/love
           cp -r love-extracted/lib dist/PathOfBuilding/love-runtime/lib
 
-          # Fuse love binary + .love at the top level (alongside src/, lib/, runtime/)
-          cat love-extracted/bin/love PathOfBuilding.love \
-            > dist/PathOfBuilding/pob-love
-          chmod +x dist/PathOfBuilding/pob-love
+          # Game directory (love/) — auto-updatable
+          cp love/main.lua love/conf.lua dist/PathOfBuilding/love/
+          cp -r love/shim dist/PathOfBuilding/love/shim
+          cp -r love/lib dist/PathOfBuilding/love/lib
 
-          # Copy game data
+          # PoB source and data
           cp -r src dist/PathOfBuilding/src
           cp -r runtime/lua dist/PathOfBuilding/runtime/lua
-          cp -r love/lib dist/PathOfBuilding/lib
 
-          # Copy manifest and default part files for auto-updates
-          if [ -f manifest.xml ]; then
-            cp manifest.xml dist/PathOfBuilding/src/manifest.xml
-          fi
+          # Manifest
+          cp manifest.xml dist/PathOfBuilding/src/manifest.xml
+
+          # Default part files
           for f in changelog.txt help.txt LICENSE.md; do
             [ -f "$f" ] && cp "$f" dist/PathOfBuilding/src/"$f"
           done
 
-          # Create launcher script
+          # Launcher script
           cat > dist/PathOfBuilding/LOVE-PathOfBuilding << 'LAUNCHER'
           #!/bin/bash
           SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
           export LD_LIBRARY_PATH="$SCRIPT_DIR/love-runtime/lib:$LD_LIBRARY_PATH"
-          exec "$SCRIPT_DIR/pob-love" "$@"
+          exec "$SCRIPT_DIR/love-runtime/love" "$SCRIPT_DIR/love" "$@"
           LAUNCHER
           chmod +x dist/PathOfBuilding/LOVE-PathOfBuilding
 
-          # Copy license
-          if [ -f LICENSE.md ]; then
-            cp LICENSE.md dist/PathOfBuilding/
-          fi
+          # License
+          [ -f LICENSE.md ] && cp LICENSE.md dist/PathOfBuilding/
 
       - name: Create tarball
         run: |
@@ -202,7 +185,7 @@ jobs:
           retention-days: 5
 
   # ------------------------------------------------------------------
-  # Create or update GitHub Release (on tag push or release event)
+  # GitHub Release
   # ------------------------------------------------------------------
   release:
     needs: [build-windows, build-linux]
@@ -229,7 +212,7 @@ jobs:
             Cross-platform Path of Building using the LÖVE 2D framework.
 
             ### Downloads
-            - **Windows x64**: `PathOfBuilding-love-windows-x64.zip` — Extract and run `LOVE-PathOfBuilding.exe`
+            - **Windows x64**: `PathOfBuilding-love-windows-x64.zip` — Extract and run `PathOfBuilding.exe`
             - **Linux x64**: `PathOfBuilding-love-linux-x64.tar.gz` — Extract and run `LOVE-PathOfBuilding`
 
             ### Requirements
@@ -240,7 +223,7 @@ jobs:
             PathOfBuilding-love-linux-x64.tar.gz
 
   # ------------------------------------------------------------------
-  # Push the release manifest to master so old builds find updates
+  # Push manifest to master for auto-updates
   # ------------------------------------------------------------------
   push-manifest:
     needs: [release, build-windows]

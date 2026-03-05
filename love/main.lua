@@ -1,25 +1,15 @@
--- LÖVE entry point for Path of Building
+-- LOVE entry point for Path of Building
 -- Custom love.run() that mirrors SimpleGraphic's callback model
 
--- Resolve paths before anything else
--- In dev mode: loveSource is the love/ directory (love/ is alongside src/)
--- In fused mode: loveSource is the path to the fused executable
+-- Resolve paths:
+-- Dev mode (love .): loveSource is the love/ directory, sibling of src/
+-- Distribution (love-runtime/love love): loveSource is the love/ game directory, sibling of src/
+-- Both cases: love/ is alongside src/, so baseDir is always one level up.
 local loveSource = love.filesystem.getSource()
-local baseDir, srcPath
-
-if love.filesystem.isFused() then
-	-- Fused exe: src/, lib/, runtime/ are siblings of the executable
-	baseDir = loveSource:match("^(.+)[/\\]") or "."
-	srcPath = baseDir .. "/src"
-else
-	-- Dev mode: love/ directory is alongside src/, runtime/
-	baseDir = loveSource .. "/.."
-	srcPath = baseDir .. "/src"
-end
+local baseDir = loveSource .. "/.."
+local srcPath = baseDir .. "/src"
 
 -- Initialize the shim layer (injects all SimpleGraphic globals into _G)
--- In dev mode, shim/ is in love/shim/ on the real filesystem.
--- In fused mode, shim/ is inside the .love archive — LÖVE's require hook finds it.
 local shimPath = loveSource .. "/shim"
 package.path = shimPath .. "/?.lua;" .. package.path
 
