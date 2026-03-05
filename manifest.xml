@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <PoBVersion>
-	<Version number="2.60.0" branch="dev" />
+	<Version number="2.60.0" branch="master" />
 	<Source part="default" url="https://raw.githubusercontent.com/NDari/PathOfBuilding/{branch}/" />
 	<Source part="program" url="https://raw.githubusercontent.com/NDari/PathOfBuilding/{branch}/src/" />
 	<Source part="tree" url="https://raw.githubusercontent.com/NDari/PathOfBuilding/{branch}/src/" />
@@ -154,7 +154,7 @@
 	<File name="Classes/PassiveSpec.lua" part="program" sha1="2e0670c4764334bbb8c495d75fad8868f082b518" />
 	<File name="Classes/PassiveSpecListControl.lua" part="program" sha1="abbece5ae39f2012001b3fb79a66f6d023786290" />
 	<File name="Classes/PassiveTree.lua" part="program" sha1="be73c09ec5ec566c7376517104f906ff7434defb" />
-	<File name="Classes/PassiveTreeView.lua" part="program" sha1="d87514e3eead072cc4da87e5fac1f65b456507b8" />
+	<File name="Classes/PassiveTreeView.lua" part="program" sha1="948af333a3d66c711284ace26be836aa7104a08a" />
 	<File name="Classes/PathControl.lua" part="program" sha1="b0b6f888636ba6a217622ac18d165012904e5e20" />
 	<File name="Classes/PoBArchivesProvider.lua" part="program" sha1="3548b003f327e54ed2c1a7f7ecabf7da48930aae" />
 	<File name="Classes/PopupDialog.lua" part="program" sha1="8e69e1087a68fedc8711068df8aaf43742cc35da" />
@@ -180,7 +180,7 @@
 	<File name="Classes/TradeQueryRateLimiter.lua" part="program" sha1="ee5bc3c02bdd7e338d4f23d5d80c2cb6f9365cee" />
 	<File name="Classes/TradeQueryRequests.lua" part="program" sha1="dff01f1eed08950bd2a7cf826574ae30d6296380" />
 	<File name="Classes/TradeStatWeightMultiplierListControl.lua" part="program" sha1="e702e0ad7837a374fd817f901dd3d549f2d50289" />
-	<File name="Classes/TreeTab.lua" part="program" sha1="575f8c4496867d933c9e9c722dbab8d6b16b33e2" />
+	<File name="Classes/TreeTab.lua" part="program" sha1="78594309facefd27c28bc686e3560e21ae64f259" />
 	<File name="Classes/UndoHandler.lua" part="program" sha1="36ab2c2049da231d4fbf531c71c3520ee324e839" />
 	<File name="Data/Bases/amulet.lua" part="program" sha1="002943eef77c5f1c4b499c056847493824649245" />
 	<File name="Data/Bases/axe.lua" part="program" sha1="59ddefad8f0e5bdda82f61d9a9a63b7b9a9d1b41" />
@@ -317,7 +317,7 @@
 	<File name="Data/Uniques/wand.lua" part="program" sha1="26dd3514610af6afb75f96ea0e12b1cb36905091" />
 	<File name="GameVersions.lua" part="program" sha1="10667a03077d9bb76f119141c64d5f12461dd0db" />
 	<File name="Launch.lua" part="program" sha1="3f79921a346b4863250c04fa45768715e8c8b98b" />
-	<File name="Modules/Build.lua" part="program" sha1="a7f9bbbac645bfea2ac30d027545a5f47d6afe1c" />
+	<File name="Modules/Build.lua" part="program" sha1="3a6a99670401cce7a192175b0851eb138f2ffd9c" />
 	<File name="Modules/BuildCompare.lua" part="program" sha1="3e65a942da568fa82a1759c2d50724208dea517c" />
 	<File name="Modules/BuildDisplayStats.lua" part="program" sha1="a1dc87a702569b535bb337fecbdee8e4c1042404" />
 	<File name="Modules/BuildList.lua" part="program" sha1="a790cbe116bbfb43924d1af1dfbfecf4e1a245bf" />
