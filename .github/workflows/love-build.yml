@@ -1,3 +1,4 @@
+# cspell:words LÖVE appimage softprops
 name: Build LÖVE Frontend
 
 on:
