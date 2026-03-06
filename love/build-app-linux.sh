@@ -1,6 +1,11 @@
 #!/bin/bash
+# cspell:words LÖVE APPIMAGE appimage
 # Build Path of Building for Linux using extracted LÖVE runtime
 # Output: Builds/PathOfBuilding/ with launcher script + LÖVE runtime + game data
+#
+# Uses the UNFUSED layout (matching CI): love/ directory on disk, LÖVE binary
+# runs with "love-runtime/love love/" so love.filesystem.getSource() returns
+# the love/ directory path (sibling of src/).
 #
 # Usage: ./build-app-linux.sh
 
@@ -50,56 +55,56 @@ if [ -d "$DIST_DIR" ]; then
 	echo "Cleaning previous build..."
 	rm -rf "$DIST_DIR"
 fi
+mkdir -p "$DIST_DIR/love-runtime"
+mkdir -p "$DIST_DIR/love"
+mkdir -p "$DIST_DIR/src"
 mkdir -p "$DIST_DIR/runtime"
 
-# Create .love file (zip of love/ directory, excluding build/launch scripts)
-echo "Creating .love file..."
-LOVE_FILE="$BUILD_DIR/PathOfBuilding.love"
-(cd "$SCRIPT_DIR" && zip -9 -r "$LOVE_FILE" . \
-	-x "run.sh" -x "run.bat" -x "build-app-linux.sh" -x "build-app-windows.bat" -x "scripts/*")
-
-# Copy extracted LÖVE shared libraries
+# LÖVE runtime (binary + shared libs)
 echo "Copying LÖVE runtime..."
-mkdir -p "$DIST_DIR/love-runtime"
+cp "$LOVE_EXTRACTED/bin/love" "$DIST_DIR/love-runtime/love"
+chmod +x "$DIST_DIR/love-runtime/love"
 cp -r "$LOVE_EXTRACTED/lib" "$DIST_DIR/love-runtime/lib"
 
-# Fuse: concatenate the love binary + .love into a single executable at the top level.
-# This must live alongside src/, lib/, runtime/ so that love.filesystem.getSource()
-# returns a path whose parent directory contains those siblings.
-echo "Fusing binary..."
-cat "$LOVE_EXTRACTED/bin/love" "$LOVE_FILE" > "$DIST_DIR/pob-love"
-chmod +x "$DIST_DIR/pob-love"
+# Game directory (love/) — on disk, auto-updatable
+echo "Copying love/ game directory..."
+cp "$SCRIPT_DIR/main.lua" "$SCRIPT_DIR/conf.lua" "$DIST_DIR/love/"
+cp -r "$SCRIPT_DIR/shim" "$DIST_DIR/love/shim"
+cp -r "$SCRIPT_DIR/lib" "$DIST_DIR/love/lib"
+if [ -d "$SCRIPT_DIR/fonts" ]; then
+	cp -r "$SCRIPT_DIR/fonts" "$DIST_DIR/love/fonts"
+fi
 
-# Copy game data
+# PoB source and data
 echo "Copying game data..."
 cp -r "$REPO_DIR/src" "$DIST_DIR/src"
-# Copy manifest and default part files for auto-updates
+mkdir -p "$DIST_DIR/runtime/lua"
+cp -r "$REPO_DIR/runtime/lua" "$DIST_DIR/runtime/lua"
+
+# Manifest (into src/ where UpdateCheck.lua expects it)
 if [ -f "$REPO_DIR/manifest.xml" ]; then
 	cp "$REPO_DIR/manifest.xml" "$DIST_DIR/src/manifest.xml"
 fi
+
+# Default part files
 for f in changelog.txt help.txt LICENSE.md; do
 	[ -f "$REPO_DIR/$f" ] && cp "$REPO_DIR/$f" "$DIST_DIR/src/$f"
 done
-cp -r "$REPO_DIR/runtime/lua" "$DIST_DIR/runtime/lua"
-cp -r "$SCRIPT_DIR/lib" "$DIST_DIR/lib"
 
-# Copy license
+# License at top level
 if [ -f "$REPO_DIR/LICENSE.md" ]; then
 	cp "$REPO_DIR/LICENSE.md" "$DIST_DIR/"
 fi
 
-# Create launcher script
+# Create launcher script (unfused: passes love/ directory as argument)
 cat > "$DIST_DIR/LOVE-PathOfBuilding" << 'LAUNCHER'
 #!/bin/bash
 # Path of Building launcher
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 export LD_LIBRARY_PATH="$SCRIPT_DIR/love-runtime/lib:$LD_LIBRARY_PATH"
-exec "$SCRIPT_DIR/pob-love" "$@"
+exec "$SCRIPT_DIR/love-runtime/love" "$SCRIPT_DIR/love" "$@"
 LAUNCHER
 chmod +x "$DIST_DIR/LOVE-PathOfBuilding"
-
-# Clean up intermediate .love file
-rm -f "$LOVE_FILE"
 
 echo ""
 echo "=== Build complete ==="

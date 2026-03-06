@@ -1,3 +1,4 @@
+-- cspell:words LÖVE
 -- shim/text.lua
 -- Text rendering: DrawString, DrawStringWidth, DrawStringCursorIndex, StripEscapes
 -- Handles font caching, color escape codes (^0-^9, ^xRRGGBB), and alignment modes.
@@ -142,6 +143,27 @@ local function parseColoredText(text)
 	return segments
 end
 
+-- Memoization caches for parsed text segments and stripped text.
+-- Keys are text strings (bounded set in PoB), entries persist across frames.
+local segmentCache = {}
+local stripCache = {}
+
+local function parseColoredTextCached(text)
+	local cached = segmentCache[text]
+	if cached then return cached end
+	cached = parseColoredText(text)
+	segmentCache[text] = cached
+	return cached
+end
+
+local function stripEscapesCached(text)
+	local cached = stripCache[text]
+	if cached then return cached end
+	cached = text:gsub("%^%d", ""):gsub("%^x%x%x%x%x%x%x", "")
+	stripCache[text] = cached
+	return cached
+end
+
 -- Reference render module to record commands
 local render
 
@@ -152,9 +174,9 @@ end
 
 function M.inject()
 	-- StripEscapes: remove ^0-^9 and ^xRRGGBB from text
-	-- Copied from HeadlessWrapper.lua for exact compatibility
+	-- Uses memoization cache for repeated calls with same text
 	function StripEscapes(text)
-		return text:gsub("%^%d", ""):gsub("%^x%x%x%x%x%x%x", "")
+		return stripEscapesCached(text)
 	end
 
 	function DrawString(left, top, align, height, fontName, text)
@@ -186,7 +208,7 @@ function M.inject()
 		-- Parse color escapes and record as a draw command in the layer system.
 		-- Capture the current SetDrawColor as the base color for segments
 		-- that have no escape color (color = nil).
-		local segments = parseColoredText(text)
+		local segments = parseColoredTextCached(text)
 		local cr, cg, cb, ca = render.getCurrentColor()
 		render.addCommand(render.CMD_TEXT, font, segments, x, top, cr, cg, cb, ca)
 	end

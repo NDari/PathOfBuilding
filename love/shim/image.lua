@@ -1,3 +1,4 @@
+-- cspell:words LÖVE clampzero
 -- shim/image.lua
 -- NewImageHandle wrapper around love.graphics.newImage
 -- Mimics the SimpleGraphic ImageHandle userdata interface.
@@ -46,6 +47,7 @@ function imageHandleClass:Load(fileName, ...)
 
 	if img then
 		self._image = img
+		self._width, self._height = img:getDimensions()
 		-- Handle flags
 		for _, flag in ipairs(flags) do
 			if flag == "CLAMP" then
@@ -54,11 +56,13 @@ function imageHandleClass:Load(fileName, ...)
 		end
 	else
 		self._image = nil
+		self._width, self._height = nil, nil
 	end
 end
 
 function imageHandleClass:Unload()
 	self._image = nil
+	self._width, self._height = nil, nil
 end
 
 function imageHandleClass:IsValid()
@@ -75,7 +79,7 @@ end
 
 function imageHandleClass:ImageSize()
 	if self._image then
-		return self._image:getDimensions()
+		return self._width, self._height
 	end
 	return 1, 1
 end

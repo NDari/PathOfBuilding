@@ -1,3 +1,4 @@
+-- cspell:words unallocate
 -- Path of Building
 --
 -- Class: Passive Tree View
@@ -456,8 +457,24 @@ function PassiveTreeViewClass:Draw(build, viewPort, inputEvents)
 		self:DrawAsset(tree.assets.BackgroundDexInt, scrX, scrY, scale)
 	end
 
+	-- Viewport culling bounds: skip drawing elements entirely off-screen.
+	-- Margins account for the largest artwork that could extend beyond the element's center.
+	local cullLeft = viewPort.x
+	local cullTop = viewPort.y
+	local cullRight = viewPort.x + viewPort.width
+	local cullBottom = viewPort.y + viewPort.height
+	local nodeMargin = 200 * scale   -- covers largest node/overlay artwork
+	local groupMargin = 500 * scale  -- groups have large orbit background circles
+	local m_min4 = function(a, b, c, d) return m_min(m_min(a, b), m_min(c, d)) end
+	local m_max4 = function(a, b, c, d) return m_max(m_max(a, b), m_max(c, d)) end
+
 	local function renderGroup(group, isExpansion)
 		local scrX, scrY = treeToScreen(group.x, group.y)
+		-- Cull groups entirely off-screen
+		if scrX + groupMargin < cullLeft or scrX - groupMargin > cullRight or
+		   scrY + groupMargin < cullTop or scrY - groupMargin > cullBottom then
+			return
+		end
 		if group.ascendancyName then
 			if group.isAscendancyStart then
 				if group.ascendancyName ~= spec.curAscendClassBaseName and (not spec.curSecondaryAscendClass or group.ascendancyName ~= spec.curSecondaryAscendClass.id) then
@@ -530,6 +547,14 @@ function PassiveTreeViewClass:Draw(build, viewPort, inputEvents)
 		connector.c[5], connector.c[6] = treeToScreen(vert[5], vert[6])
 		connector.c[7], connector.c[8] = treeToScreen(vert[7], vert[8])
 
+		-- Cull connectors entirely off-screen
+		if m_max4(connector.c[1], connector.c[3], connector.c[5], connector.c[7]) < cullLeft or
+		   m_min4(connector.c[1], connector.c[3], connector.c[5], connector.c[7]) > cullRight or
+		   m_max4(connector.c[2], connector.c[4], connector.c[6], connector.c[8]) < cullTop or
+		   m_min4(connector.c[2], connector.c[4], connector.c[6], connector.c[8]) > cullBottom then
+			return
+		end
+
 		if hoverDep and hoverDep[node1] and hoverDep[node2] then
 			-- Both nodes depend on the node currently being hovered over, so color the line red
 			setConnectorColor(1, 0, 0)
@@ -586,6 +611,14 @@ function PassiveTreeViewClass:Draw(build, viewPort, inputEvents)
 
 	-- Draw the nodes
 	for nodeId, node in pairs(spec.nodes) do
+		-- Early screen-space conversion for viewport culling
+		local scrX, scrY = treeToScreen(node.x, node.y)
+		-- Skip nodes entirely off-screen (never skip hoverNode or search-matching nodes)
+		if node ~= hoverNode and not self.searchStrResults[nodeId] and
+		   (scrX + nodeMargin < cullLeft or scrX - nodeMargin > cullRight or
+		    scrY + nodeMargin < cullTop or scrY - nodeMargin > cullBottom) then
+			-- Node is off-screen, skip all rendering for it
+		else
 		-- Determine the base and overlay images for this node based on type and state
 		local compareNode = self.compareSpec and self.compareSpec.nodes[nodeId] or nil
 
@@ -692,9 +725,6 @@ function PassiveTreeViewClass:Draw(build, viewPort, inputEvents)
 			end
 		end
 
-		-- Convert node position to screen-space
-		local scrX, scrY = treeToScreen(node.x, node.y)
-	
 		-- Determine color for the base artwork
 		if self.showHeatMap then
 			if not isAlloc and node.type ~= "ClassStart" and node.type ~= "AscendClassStart" then
@@ -868,8 +898,9 @@ function PassiveTreeViewClass:Draw(build, viewPort, inputEvents)
 			self.tooltip.center = true
 			self.tooltip:Draw(m_floor(scrX - size), m_floor(scrY - size), size * 2, size * 2, viewPort)
 		end
+		end -- end of viewport culling else block
 	end
-	
+
 	-- Draw ring overlays for jewel sockets
 	SetDrawLayer(nil, 25)
 	for nodeId in pairs(tree.sockets) do
