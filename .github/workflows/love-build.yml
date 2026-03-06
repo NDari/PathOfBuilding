@@ -1,0 +1,266 @@
+# cspell:words LÖVE appimage softprops mingw mwindows
+name: Build LÖVE Frontend
+
+on:
+  push:
+    tags:
+      - 'love-v*'
+  release:
+    types: [published]
+  workflow_dispatch:
+
+env:
+  LOVE_VERSION: '11.5'
+
+jobs:
+  # ------------------------------------------------------------------
+  # Windows x64
+  # ------------------------------------------------------------------
+  build-windows:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Inject version tag
+        run: sed -i "s/LOVE_VERSION_TAG = \"love-v[^\"]*\"/LOVE_VERSION_TAG = \"${GITHUB_REF_NAME}\"/" love/shim/init.lua
+
+      - name: Download LÖVE
+        run: |
+          curl -L -o love-win64.zip \
+            "https://github.com/love2d/love/releases/download/${{ env.LOVE_VERSION }}/love-${{ env.LOVE_VERSION }}-win64.zip"
+          unzip love-win64.zip
+          mv "love-${{ env.LOVE_VERSION }}-win64" love-win64
+
+      - name: Install cross-compiler
+        run: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64
+
+      - name: Compile stub launcher
+        run: x86_64-w64-mingw32-gcc -mwindows -O2 -o PathOfBuilding.exe love/launcher/launcher.c
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Generate release manifest
+        run: |
+          bash love/scripts/generate-manifest.sh
+          sed -i 's/branch="dev"/branch="master"/' manifest.xml
+
+      - name: Package
+        run: |
+          mkdir -p dist/PathOfBuilding/love-runtime
+          mkdir -p dist/PathOfBuilding/love
+          mkdir -p dist/PathOfBuilding/src
+          mkdir -p dist/PathOfBuilding/runtime
+
+          # Stub launcher
+          cp PathOfBuilding.exe dist/PathOfBuilding/
+
+          # LÖVE runtime
+          cp love-win64/love.exe dist/PathOfBuilding/love-runtime/
+          for f in love-win64/*.dll; do
+            cp "$f" dist/PathOfBuilding/love-runtime/
+          done
+          if [ -f love-win64/license.txt ]; then
+            cp love-win64/license.txt dist/PathOfBuilding/love-runtime/love-license.txt
+          fi
+
+          # Game directory (love/) — auto-updatable
+          cp love/main.lua love/conf.lua dist/PathOfBuilding/love/
+          cp -r love/shim dist/PathOfBuilding/love/shim
+          cp -r love/lib dist/PathOfBuilding/love/lib
+          cp -r love/fonts dist/PathOfBuilding/love/fonts
+
+          # PoB source and data
+          cp -r src/. dist/PathOfBuilding/src
+          mkdir -p dist/PathOfBuilding/runtime/lua
+          cp -r runtime/lua/. dist/PathOfBuilding/runtime/lua
+
+          # Manifest (into src/ where UpdateCheck.lua expects it)
+          cp manifest.xml dist/PathOfBuilding/src/manifest.xml
+
+          # Default part files
+          for f in changelog.txt help.txt LICENSE.md; do
+            [ -f "$f" ] && cp "$f" dist/PathOfBuilding/src/"$f"
+          done
+
+          # License at top level
+          [ -f LICENSE.md ] && cp LICENSE.md dist/PathOfBuilding/
+
+      - name: Create zip
+        run: |
+          cd dist
+          zip -9 -r ../PathOfBuilding-love-windows-x64.zip PathOfBuilding/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-x64
+          path: PathOfBuilding-love-windows-x64.zip
+          retention-days: 5
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-manifest
+          path: manifest.xml
+          retention-days: 5
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: version-tagged-init
+          path: love/shim/init.lua
+          retention-days: 5
+
+  # ------------------------------------------------------------------
+  # Linux x64
+  # ------------------------------------------------------------------
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Inject version tag
+        run: sed -i "s/LOVE_VERSION_TAG = \"love-v[^\"]*\"/LOVE_VERSION_TAG = \"${GITHUB_REF_NAME}\"/" love/shim/init.lua
+
+      - name: Download and extract LÖVE AppImage
+        run: |
+          curl -L -o love.AppImage \
+            "https://github.com/love2d/love/releases/download/${{ env.LOVE_VERSION }}/love-${{ env.LOVE_VERSION }}-x86_64.AppImage"
+          chmod +x love.AppImage
+          ./love.AppImage --appimage-extract
+          mv squashfs-root love-extracted
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Generate release manifest
+        run: |
+          bash love/scripts/generate-manifest.sh
+          sed -i 's/branch="dev"/branch="master"/' manifest.xml
+
+      - name: Package
+        run: |
+          mkdir -p dist/PathOfBuilding/love-runtime
+          mkdir -p dist/PathOfBuilding/love
+          mkdir -p dist/PathOfBuilding/src
+          mkdir -p dist/PathOfBuilding/runtime
+
+          # LÖVE runtime (binary + shared libs)
+          cp love-extracted/bin/love dist/PathOfBuilding/love-runtime/love
+          chmod +x dist/PathOfBuilding/love-runtime/love
+          cp -r love-extracted/lib dist/PathOfBuilding/love-runtime/lib
+
+          # Game directory (love/) — auto-updatable
+          cp love/main.lua love/conf.lua dist/PathOfBuilding/love/
+          cp -r love/shim dist/PathOfBuilding/love/shim
+          cp -r love/lib dist/PathOfBuilding/love/lib
+          cp -r love/fonts dist/PathOfBuilding/love/fonts
+
+          # PoB source and data
+          cp -r src/. dist/PathOfBuilding/src
+          mkdir -p dist/PathOfBuilding/runtime/lua
+          cp -r runtime/lua/. dist/PathOfBuilding/runtime/lua
+
+          # Manifest
+          cp manifest.xml dist/PathOfBuilding/src/manifest.xml
+
+          # Default part files
+          for f in changelog.txt help.txt LICENSE.md; do
+            [ -f "$f" ] && cp "$f" dist/PathOfBuilding/src/"$f"
+          done
+
+          # Launcher script
+          cat > dist/PathOfBuilding/LOVE-PathOfBuilding << 'LAUNCHER'
+          #!/bin/bash
+          SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+          export LD_LIBRARY_PATH="$SCRIPT_DIR/love-runtime/lib:$LD_LIBRARY_PATH"
+          exec "$SCRIPT_DIR/love-runtime/love" "$SCRIPT_DIR/love" "$@"
+          LAUNCHER
+          chmod +x dist/PathOfBuilding/LOVE-PathOfBuilding
+
+          # License
+          [ -f LICENSE.md ] && cp LICENSE.md dist/PathOfBuilding/
+
+      - name: Create tarball
+        run: |
+          cd dist
+          tar czf ../PathOfBuilding-love-linux-x64.tar.gz PathOfBuilding/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-x64
+          path: PathOfBuilding-love-linux-x64.tar.gz
+          retention-days: 5
+
+  # ------------------------------------------------------------------
+  # GitHub Release
+  # ------------------------------------------------------------------
+  release:
+    needs: [build-windows, build-linux]
+    if: startsWith(github.ref, 'refs/tags/love-v') || github.event_name == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-x64
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: linux-x64
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "LÖVE Frontend ${{ github.ref_name }}"
+          body: |
+            ## LÖVE Frontend Release
+
+            Cross-platform Path of Building using the LÖVE 2D framework.
+
+            ### Downloads
+            - **Windows x64**: `PathOfBuilding-love-windows-x64.zip` — Extract and run `PathOfBuilding.exe`
+            - **Linux x64**: `PathOfBuilding-love-linux-x64.tar.gz` — Extract and run `LOVE-PathOfBuilding`
+
+            ### Requirements
+            - **curl** on PATH (ships with Windows 10+ and all modern Linux distros)
+            - No other dependencies — LÖVE runtime is bundled
+          files: |
+            PathOfBuilding-love-windows-x64.zip
+            PathOfBuilding-love-linux-x64.tar.gz
+
+  # ------------------------------------------------------------------
+  # Push manifest to master for auto-updates
+  # ------------------------------------------------------------------
+  push-manifest:
+    needs: [release, build-windows]
+    if: startsWith(github.ref, 'refs/tags/love-v') || github.event_name == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-manifest
+          path: .
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: version-tagged-init
+          path: love/shim
+
+      - name: Commit and push release files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add manifest.xml love/shim/init.lua
+          git diff --cached --quiet && echo "No changes, skipping" && exit 0
+          git commit -m "Update manifest and version tag for ${{ github.ref_name }}"
+          git push origin master

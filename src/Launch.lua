@@ -1,4 +1,5 @@
 #@ SimpleGraphic
+-- cspell:words maxtrace maxmcode setpause
 -- Path of Building
 --
 -- Module: Launch
@@ -55,9 +56,9 @@ function launch:OnInit()
 			end
 		end
 	end
-	if localManXML and not self.versionBranch and not self.versionPlatform then
-		-- Looks like a remote manifest, so we're probably running from a repository
-		-- Enable dev mode to disable updates and set user path to be the script path
+	if (localManXML and not self.versionBranch and not self.versionPlatform) or self.versionBranch == "dev" then
+		-- Dev branch or remote manifest without version info — enable dev mode
+		-- to disable updates and set user path to be the script path
 		self.devMode = true
 	end
 	local installedFile = io.open("installed.cfg", "r")

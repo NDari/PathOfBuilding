@@ -93,6 +93,7 @@ local scriptPath, scriptFallback = GetScriptPath()
 scriptPath = scriptPath or scriptFallback or "."
 local runtimePath, runtimeFallback = GetRuntimePath()
 runtimePath = runtimePath or runtimeFallback or scriptPath
+local lovePath = scriptPath:match("^(.+)[/\\]") .. "/love"
 
 -- Load and process local manifest
 local localVer
@@ -117,6 +118,8 @@ if localManXML and localManXML[1].elem == "PoBVersion" then
 				node.attrib.name = node.attrib.name:gsub("{space}", " ")
 				if node.attrib.part == "runtime" then
 					fullPath = runtimePath .. "/" .. node.attrib.name
+				elseif node.attrib.part == "love" then
+					fullPath = lovePath .. "/" .. node.attrib.name
 				else
 					fullPath = scriptPath .. "/" .. node.attrib.name
 				end
@@ -159,6 +162,8 @@ if remoteManXML and remoteManXML[1].elem == "PoBVersion" then
 					local fullPath
 					if node.attrib.part == "runtime" then
 						fullPath = runtimePath .. "/" .. node.attrib.name
+					elseif node.attrib.part == "love" then
+						fullPath = lovePath .. "/" .. node.attrib.name
 					else
 						fullPath = scriptPath .. "/" .. node.attrib.name
 					end

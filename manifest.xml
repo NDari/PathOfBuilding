@@ -1,13 +1,31 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <PoBVersion>
-	<Version number="2.62.0" />
-	<Source part="default" url="https://raw.githubusercontent.com/PathOfBuildingCommunity/PathOfBuilding/{branch}/" />
-	<Source part="runtime" platform="win32" url="https://raw.githubusercontent.com/PathOfBuildingCommunity/PathOfBuilding/{branch}/runtime/" />
-	<Source part="program" url="https://raw.githubusercontent.com/PathOfBuildingCommunity/PathOfBuilding/{branch}/src/" />
-	<Source part="tree" url="https://raw.githubusercontent.com/PathOfBuildingCommunity/PathOfBuilding/{branch}/src/" />
+	<Version number="2.62.0" branch="master" />
+	<Source part="default" url="https://raw.githubusercontent.com/NDari/PathOfBuilding/{branch}/" />
+	<Source part="runtime" platform="win32" url="https://raw.githubusercontent.com/NDari/PathOfBuilding/{branch}/runtime/" />
+	<Source part="program" url="https://raw.githubusercontent.com/NDari/PathOfBuilding/{branch}/src/" />
+	<Source part="tree" url="https://raw.githubusercontent.com/NDari/PathOfBuilding/{branch}/src/" />
+	<Source part="love" url="https://raw.githubusercontent.com/NDari/PathOfBuilding/{branch}/love/" />
 	<File name="changelog.txt" part="default" sha1="45816191f0195aa78c439e64c8511195243eafcb" />
 	<File name="help.txt" part="default" sha1="e486cb63a78f5ca355430b67fa23e02fd30f5771" />
 	<File name="LICENSE.md" part="default" sha1="c77635aa1ba0a2ffe8eb72f93b3376e3a3d2041a" />
+	<File name="conf.lua" part="love" sha1="252cf72774f102166c30ff16c83c7aa30db5ef77" />
+	<File name="fonts/.gitkeep" part="love" sha1="da39a3ee5e6b4b0d3255bfef95601890afd80709" />
+	<File name="fonts/BitstreamVeraSansMono.ttf" part="love" sha1="2c2e2ded3c903b5186f955871109f084edef4dbe" />
+	<File name="fonts/FontinSmallCaps.ttf" part="love" sha1="49fbba15b8e4f0cd89a817574f9a307254ab75c0" />
+	<File name="lib/lcurl/safe.lua" part="love" sha1="336bb0d24f5987084776fbd34e3796ea0b040c4c" />
+	<File name="lib/lua-utf8.lua" part="love" sha1="21d847c2aa57142e5103ba0e1c70df3e62c1ff95" />
+	<File name="lib/lzip.lua" part="love" sha1="45e6b52a99f6de6d34fec3b650c20042e3eaed3c" />
+	<File name="main.lua" part="love" sha1="33cabd7779213a446105eb7145bf396fbc8decf5" />
+	<File name="shim/compat.lua" part="love" sha1="026354681d543eb916db3c4f23d07a0af1b4ceb4" />
+	<File name="shim/filesearch.lua" part="love" sha1="93d4e267e1c1314bb08d48d406a84ea988bb912c" />
+	<File name="shim/image.lua" part="love" sha1="1efce77d5b608c979058a2e66e9a2cfae1cadea3" />
+	<File name="shim/init.lua" part="love" sha1="5e6038f4783571aa07c8645a50126e298a593913" />
+	<File name="shim/input.lua" part="love" sha1="04ab5f232628017f2d8f28484dae66f72132e6ff" />
+	<File name="shim/render.lua" part="love" sha1="4283f357e609f454c551662648b14f130f7dd5da" />
+	<File name="shim/subscript.lua" part="love" sha1="baf48aea123a0dfb4f79c1bb265ac94e714e2b3a" />
+	<File name="shim/system.lua" part="love" sha1="c449162c3cb96d3449d7e7d5d0c63834b023da42" />
+	<File name="shim/text.lua" part="love" sha1="0da327660a4d8641f28aee0b942599973e17720e" />
 	<File name="Assets/ascendancypassiveheaderleft.png" part="program" sha1="6a65683dcc3b14382dc083198fe9361454e91b15" />
 	<File name="Assets/ascendancypassiveheadermiddle.png" part="program" sha1="79ccf100c4154d8f65544e2b32d44a612b7007c0" />
 	<File name="Assets/ascendancypassiveheaderright.png" part="program" sha1="dbb86c1b8b51019379e52cd1f8b2a9edee07a3f6" />
