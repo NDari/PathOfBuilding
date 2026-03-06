@@ -80,7 +80,7 @@ function M.init(loveSource, srcPath, baseDir)
 	end
 
 	-- LÖVE frontend version tag (displayed in the main UI)
-	_G.LOVE_VERSION_TAG = "love-v0.1.13"
+	_G.LOVE_VERSION_TAG = "love-v0.1.14"
 
 	-- arg table expected by PoB (command line arguments)
 	-- LÖVE strips its own args, pass through any remaining

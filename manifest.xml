@@ -19,7 +19,7 @@
 	<File name="shim/compat.lua" part="love" sha1="026354681d543eb916db3c4f23d07a0af1b4ceb4" />
 	<File name="shim/filesearch.lua" part="love" sha1="93d4e267e1c1314bb08d48d406a84ea988bb912c" />
 	<File name="shim/image.lua" part="love" sha1="1b14d2e9912615b6c2f3e63daafb59898c2a2c76" />
-	<File name="shim/init.lua" part="love" sha1="3d8a7bc1ade1b8aabe58414a72f15647413015aa" />
+	<File name="shim/init.lua" part="love" sha1="fe875a8e7fc0d5031ce7c2000785d30b008fa4ed" />
 	<File name="shim/input.lua" part="love" sha1="04ab5f232628017f2d8f28484dae66f72132e6ff" />
 	<File name="shim/render.lua" part="love" sha1="9c05d728cd33246aad03493ce238ba9759b9d857" />
 	<File name="shim/subscript.lua" part="love" sha1="baf48aea123a0dfb4f79c1bb265ac94e714e2b3a" />
@@ -335,7 +335,7 @@
 	<File name="Data/Uniques/wand.lua" part="program" sha1="26dd3514610af6afb75f96ea0e12b1cb36905091" />
 	<File name="GameVersions.lua" part="program" sha1="10667a03077d9bb76f119141c64d5f12461dd0db" />
 	<File name="Launch.lua" part="program" sha1="3f79921a346b4863250c04fa45768715e8c8b98b" />
-	<File name="Modules/Build.lua" part="program" sha1="3a6a99670401cce7a192175b0851eb138f2ffd9c" />
+	<File name="Modules/Build.lua" part="program" sha1="cf2f9d014b013fbbd111ab7f49662d12edae6d65" />
 	<File name="Modules/BuildCompare.lua" part="program" sha1="3e65a942da568fa82a1759c2d50724208dea517c" />
 	<File name="Modules/BuildDisplayStats.lua" part="program" sha1="a1dc87a702569b535bb337fecbdee8e4c1042404" />
 	<File name="Modules/BuildList.lua" part="program" sha1="a790cbe116bbfb43924d1af1dfbfecf4e1a245bf" />
