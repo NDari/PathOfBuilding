@@ -70,6 +70,7 @@ jobs:
           cp love/main.lua love/conf.lua dist/PathOfBuilding/love/
           cp -r love/shim dist/PathOfBuilding/love/shim
           cp -r love/lib dist/PathOfBuilding/love/lib
+          cp -r love/fonts dist/PathOfBuilding/love/fonts
 
           # PoB source and data
           cp -r src/. dist/PathOfBuilding/src
@@ -155,6 +156,7 @@ jobs:
           cp love/main.lua love/conf.lua dist/PathOfBuilding/love/
           cp -r love/shim dist/PathOfBuilding/love/shim
           cp -r love/lib dist/PathOfBuilding/love/lib
+          cp -r love/fonts dist/PathOfBuilding/love/fonts
 
           # PoB source and data
           cp -r src/. dist/PathOfBuilding/src
