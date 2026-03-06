@@ -9,6 +9,9 @@
 	<File name="help.txt" part="default" sha1="b1287f429e40ffdb96a2aff30b20adfa1540cf66" />
 	<File name="LICENSE.md" part="default" sha1="be578b61d2b3381db4135c02101b2b0fc34fdeac" />
 	<File name="conf.lua" part="love" sha1="252cf72774f102166c30ff16c83c7aa30db5ef77" />
+	<File name="fonts/.gitkeep" part="love" sha1="da39a3ee5e6b4b0d3255bfef95601890afd80709" />
+	<File name="fonts/BitstreamVeraSansMono.ttf" part="love" sha1="2c2e2ded3c903b5186f955871109f084edef4dbe" />
+	<File name="fonts/FontinSmallCaps.ttf" part="love" sha1="49fbba15b8e4f0cd89a817574f9a307254ab75c0" />
 	<File name="lib/lcurl/safe.lua" part="love" sha1="336bb0d24f5987084776fbd34e3796ea0b040c4c" />
 	<File name="lib/lua-utf8.lua" part="love" sha1="21d847c2aa57142e5103ba0e1c70df3e62c1ff95" />
 	<File name="lib/lzip.lua" part="love" sha1="45e6b52a99f6de6d34fec3b650c20042e3eaed3c" />
@@ -16,7 +19,7 @@
 	<File name="shim/compat.lua" part="love" sha1="026354681d543eb916db3c4f23d07a0af1b4ceb4" />
 	<File name="shim/filesearch.lua" part="love" sha1="93d4e267e1c1314bb08d48d406a84ea988bb912c" />
 	<File name="shim/image.lua" part="love" sha1="1b14d2e9912615b6c2f3e63daafb59898c2a2c76" />
-	<File name="shim/init.lua" part="love" sha1="7edb3fa3838a678ca9c8623337075cf241bd23a2" />
+	<File name="shim/init.lua" part="love" sha1="962691ae8ac379374badbdaa1344a1fb979581d4" />
 	<File name="shim/input.lua" part="love" sha1="04ab5f232628017f2d8f28484dae66f72132e6ff" />
 	<File name="shim/render.lua" part="love" sha1="9c05d728cd33246aad03493ce238ba9759b9d857" />
 	<File name="shim/subscript.lua" part="love" sha1="25cda2e1d25ca51b3051c3c16e90639f20dcd5e7" />
