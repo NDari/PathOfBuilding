@@ -154,7 +154,11 @@ function buildMode:Init(dbFileName, buildName, buildXML, convertBuild, importLin
 		end
 	end
 	self.controls.save = new("ButtonControl", {"LEFT",self.controls.buildName,"RIGHT"}, {8, 0, 50, 20}, "Save", function()
-		self:SaveDBFile()
+		if self.compareSnapshot then
+			self:OpenSnapshotSavePopup()
+		else
+			self:SaveDBFile()
+		end
 	end)
 	self.controls.save.enabled = function()
 		return not self.dbFileName or self.unsaved
@@ -745,6 +749,7 @@ function buildMode:Init(dbFileName, buildName, buildXML, convertBuild, importLin
 	self.outputRevision = 1
 	self.calcsTab:BuildOutput()
 	self:RefreshStatList()
+	self:ApplyPendingSnapshot()
 	self.buildFlag = false
 
 	self.spec:SetWindowTitleWithBuildClass()
@@ -991,13 +996,14 @@ end
 
 function buildMode:Shutdown()
 	if launch.devMode and (not main.disableDevAutoSave) and self.targetVersion and not self.abortSave then
+		local keepSnap = self.compareSnapshot ~= nil
 		if self.dbFileName then
-			self:SaveDBFile()
-		elseif self.unsaved then		
+			self:SaveDBFile(keepSnap)
+		elseif self.unsaved then
 			self.dbFileName = main.buildPath.."~~temp~~.xml"
 			self.buildName = "~~temp~~"
 			self.dbFileSubPath = ""
-			self:SaveDBFile()
+			self:SaveDBFile(keepSnap)
 		end
 	end
 	self.abortSave = nil
@@ -1050,6 +1056,65 @@ function buildMode:Load(xml, fileName)
 			self.timelessData.socketFilterDistance = tonumber(child.attrib.socketFilterDistance) or 0
 			self.timelessData.searchList = child.attrib.searchList
 			self.timelessData.searchListFallback = child.attrib.searchListFallback
+		elseif child.elem == "CompareSnapshot" then
+			-- Restore snapshot comparison state
+			self._pendingSnapshot = {
+				label = child.attrib.label or "Snapshot",
+				treeVersion = child.attrib.treeVersion,
+				nodeStr = child.attrib.nodes or "",
+				stats = {},
+				minionStats = {},
+				skillDPS = {},
+				inputState = nil,
+			}
+			for _, snapChild in ipairs(child) do
+				if snapChild.elem == "SnapStat" then
+					local val = tonumber(snapChild.attrib.value)
+					if val and snapChild.attrib.stat then
+						self._pendingSnapshot.stats[snapChild.attrib.stat] = val
+					end
+				elseif snapChild.elem == "SnapMinionStat" then
+					local val = tonumber(snapChild.attrib.value)
+					if val and snapChild.attrib.stat then
+						self._pendingSnapshot.minionStats[snapChild.attrib.stat] = val
+					end
+				elseif snapChild.elem == "SnapSkillDPS" then
+					t_insert(self._pendingSnapshot.skillDPS, {
+						name = snapChild.attrib.name or "",
+						dps = tonumber(snapChild.attrib.dps) or 0,
+						count = tonumber(snapChild.attrib.count) or 1,
+						trigger = snapChild.attrib.trigger or "",
+						skillPart = snapChild.attrib.skillPart or "",
+						source = snapChild.attrib.source or "",
+					})
+				elseif snapChild.elem == "SnapInputState" then
+					local inputState = {
+						allocNodeIds = {},
+						slotItems = {},
+						config = {},
+					}
+					if snapChild.attrib and snapChild.attrib.allocNodes and snapChild.attrib.allocNodes ~= "" then
+						for nodeId in snapChild.attrib.allocNodes:gmatch("[^,]+") do
+							local id = tonumber(nodeId)
+							if id then
+								inputState.allocNodeIds[id] = tostring(id)
+							end
+						end
+					end
+					for _, inputChild in ipairs(snapChild) do
+						if inputChild.elem == "SlotItem" then
+							inputState.slotItems[inputChild.attrib.slot] = inputChild.attrib.item
+						elseif inputChild.elem == "ConfigVal" then
+							local v = inputChild.attrib.value
+							if v == "true" then v = true
+							elseif v == "false" then v = false
+							else v = tonumber(v) or v end
+							inputState.config[inputChild.attrib.key] = v
+						end
+					end
+					self._pendingSnapshot.inputState = inputState
+				end
+			end
 		end
 	end
 end
@@ -1134,6 +1199,68 @@ function buildMode:Save(xml)
 		}
 	}
 	t_insert(xml, timelessData)
+
+	-- Save snapshot comparison state if active
+	if self.compareSnapshot and self.compareTreeProxy then
+		local snapXML = { elem = "CompareSnapshot", attrib = {
+			label = self.compareLabel or "Snapshot",
+			treeVersion = self.compareTreeProxy.treeVersion,
+		}}
+		-- Save snapshot allocated node IDs
+		local snapNodeIds = {}
+		for nodeId, proxyNode in pairs(self.compareTreeProxy.nodes) do
+			if proxyNode.alloc then
+				t_insert(snapNodeIds, nodeId)
+			end
+		end
+		snapXML.attrib.nodes = table.concat(snapNodeIds, ",")
+		-- Save snapshot calc output stats (only numeric top-level values)
+		for statName, statVal in pairs(self.compareSnapshot) do
+			if type(statVal) == "number" then
+				t_insert(snapXML, { elem = "SnapStat", attrib = { stat = statName, value = tostring(statVal) } })
+			elseif type(statVal) == "table" and statName == "Minion" then
+				for minionStat, minionVal in pairs(statVal) do
+					if type(minionVal) == "number" then
+						t_insert(snapXML, { elem = "SnapMinionStat", attrib = { stat = minionStat, value = tostring(minionVal) } })
+					end
+				end
+			elseif type(statVal) == "table" and statName == "SkillDPS" then
+				for _, skillData in ipairs(statVal) do
+					t_insert(snapXML, { elem = "SnapSkillDPS", attrib = {
+						name = skillData.name or "",
+						dps = tostring(skillData.dps or 0),
+						count = tostring(skillData.count or 1),
+						trigger = skillData.trigger or "",
+						skillPart = skillData.skillPart or "",
+						source = skillData.source or "",
+					}})
+				end
+			end
+		end
+		-- Save snapshot input state for structural diff
+		if self.compareInputState then
+			local inputXML = { elem = "SnapInputState", attrib = {} }
+			if self.compareInputState.allocNodeIds then
+				local nodeList = {}
+				for nodeId in pairs(self.compareInputState.allocNodeIds) do
+					t_insert(nodeList, nodeId)
+				end
+				inputXML.attrib.allocNodes = table.concat(nodeList, ",")
+			end
+			if self.compareInputState.slotItems then
+				for slotName, itemName in pairs(self.compareInputState.slotItems) do
+					t_insert(inputXML, { elem = "SlotItem", attrib = { slot = slotName, item = itemName } })
+				end
+			end
+			if self.compareInputState.config then
+				for k, v in pairs(self.compareInputState.config) do
+					t_insert(inputXML, { elem = "ConfigVal", attrib = { key = k, value = tostring(v) } })
+				end
+			end
+			t_insert(snapXML, inputXML)
+		end
+		t_insert(xml, snapXML)
+	end
 end
 
 function buildMode:ResetModFlags()
@@ -1173,7 +1300,11 @@ function buildMode:OnFrame(inputEvents)
 						self.viewMode = "IMPORT"
 					self.importTab:SelectControl(self.importTab.controls.importCodeIn)
 				elseif event.key == "s" then
-					self:SaveDBFile()
+					if self.compareSnapshot then
+						self:OpenSnapshotSavePopup()
+					else
+						self:SaveDBFile()
+					end
 					inputEvents[id] = nil
 				elseif event.key == "w" then
 					if self.unsaved then
@@ -1366,7 +1497,11 @@ function buildMode:OpenSavePopup(mode)
 	controls.save = new("ButtonControl", nil, {-90, 70, 80, 20}, "Save", function()
 		main:ClosePopup()
 		self.actionOnSave = mode
-		self:SaveDBFile()
+		if self.compareSnapshot then
+			self:OpenSnapshotSavePopup()
+		else
+			self:SaveDBFile()
+		end
 	end)
 	controls.noSave = new("ButtonControl", nil, {0, 70, 80, 20}, "Don't Save", function()
 		main:ClosePopup()
@@ -1382,6 +1517,25 @@ function buildMode:OpenSavePopup(mode)
 		main:ClosePopup()
 	end)
 	main:OpenPopup(300, 100, "Save Changes", controls)
+end
+
+function buildMode:OpenSnapshotSavePopup(onComplete)
+	local controls = { }
+	controls.label = new("LabelControl", nil, {0, 20, 0, 16}, "^7This build has an active snapshot.\nHow would you like to save?")
+	controls.saveSnap = new("ButtonControl", nil, {-120, 70, 130, 20}, "Save Snapshot", function()
+		main:ClosePopup()
+		self:SaveDBFile(true)
+		if onComplete then onComplete() end
+	end)
+	controls.save = new("ButtonControl", nil, {20, 70, 80, 20}, "Save", function()
+		main:ClosePopup()
+		self:SaveDBFile(false)
+		if onComplete then onComplete() end
+	end)
+	controls.close = new("ButtonControl", nil, {130, 70, 80, 20}, "Cancel", function()
+		main:ClosePopup()
+	end)
+	main:OpenPopup(380, 100, "Save Build", controls)
 end
 
 function buildMode:OpenSaveAsPopup()
@@ -1417,18 +1571,44 @@ function buildMode:OpenSaveAsPopup()
 	controls.folder = new("FolderListControl", nil, {0, 115, 450, 100}, self.dbFileSubPath, function(subPath)
 		updateBuildName()
 	end)
-	controls.save = new("ButtonControl", nil, {-45, 225, 80, 20}, "Save", function()
-		main:ClosePopup()
-		self.dbFileName = newFileName
-		self.buildName = newBuildName
-		self.dbFileSubPath = controls.folder.subPath
-		self:SaveDBFile()
-		self.spec:SetWindowTitleWithBuildClass()
-	end)
-	controls.close = new("ButtonControl", nil, {45, 225, 80, 20}, "Cancel", function()
-		main:ClosePopup()
-		self.actionOnSave = nil
-	end)
+	if self.compareSnapshot then
+		controls.save = new("ButtonControl", nil, {15, 225, 80, 20}, "Save", function()
+			main:ClosePopup()
+			self.dbFileName = newFileName
+			self.buildName = newBuildName
+			self.dbFileSubPath = controls.folder.subPath
+			self:SaveDBFile(false)
+			self.spec:SetWindowTitleWithBuildClass()
+		end)
+		controls.saveSnap = new("ButtonControl", nil, {-115, 225, 120, 20}, "Save Snapshot", function()
+			main:ClosePopup()
+			self.dbFileName = newFileName
+			self.buildName = newBuildName
+			self.dbFileSubPath = controls.folder.subPath
+			self:SaveDBFile(true)
+			self.spec:SetWindowTitleWithBuildClass()
+		end)
+		controls.saveSnap.enabled = function()
+			return controls.save.enabled
+		end
+		controls.close = new("ButtonControl", nil, {120, 225, 80, 20}, "Cancel", function()
+			main:ClosePopup()
+			self.actionOnSave = nil
+		end)
+	else
+		controls.save = new("ButtonControl", nil, {-45, 225, 80, 20}, "Save", function()
+			main:ClosePopup()
+			self.dbFileName = newFileName
+			self.buildName = newBuildName
+			self.dbFileSubPath = controls.folder.subPath
+			self:SaveDBFile()
+			self.spec:SetWindowTitleWithBuildClass()
+		end)
+		controls.close = new("ButtonControl", nil, {45, 225, 80, 20}, "Cancel", function()
+			main:ClosePopup()
+			self.actionOnSave = nil
+		end)
+	end
 
 	if self.dbFileName or self.buildName then
 		controls.save.enabled = self.dbFileName or self.buildName
@@ -1437,7 +1617,8 @@ function buildMode:OpenSaveAsPopup()
 		controls.save.enabled = false
 	end
 
-	main:OpenPopup(470, 255, self.dbFileName and "Save As" or "Save", controls, "save", "edit", "close")
+	local popupWidth = self.compareSnapshot and 530 or 470
+	main:OpenPopup(popupWidth, 255, self.dbFileName and "Save As" or "Save", controls, "save", "edit", "close")
 end
 
 -- Open the spectre library popup
@@ -1829,6 +2010,42 @@ function buildMode:LoadCompareFromCode(code)
 		return
 	end
 	self:LoadCompareFromXML(xmlText, "Build Code")
+end
+
+function buildMode:ApplyPendingSnapshot()
+	local snap = self._pendingSnapshot
+	if not snap then return end
+	self._pendingSnapshot = nil
+
+	-- Rebuild compareSnapshot (the calc output table)
+	local compareOutput = snap.stats
+	if next(snap.minionStats) then
+		compareOutput.Minion = snap.minionStats
+	end
+	if #snap.skillDPS > 0 then
+		compareOutput.SkillDPS = snap.skillDPS
+	end
+	self.compareSnapshot = compareOutput
+	self.compareLabel = snap.label
+
+	-- Rebuild compareTreeProxy from saved node IDs
+	if snap.nodeStr ~= "" and snap.treeVersion == self.spec.treeVersion then
+		local allocData = {}
+		for nodeId in snap.nodeStr:gmatch("[^,]+") do
+			local id = tonumber(nodeId)
+			if id and self.spec.nodes[id] then
+				allocData[id] = { sd = self.spec.nodes[id].sd }
+			end
+		end
+		self.compareTreeProxy = self:BuildCompareTreeProxy(allocData)
+	end
+
+	-- Restore input state for structural diff
+	if snap.inputState then
+		self.compareInputState = snap.inputState
+	end
+
+	self:RefreshStatList()
 end
 
 function buildMode:BuildCompareTreeProxy(allocData)
@@ -2234,12 +2451,31 @@ function buildMode:SaveDB(fileName)
 end
 
 
-function buildMode:SaveDBFile()
+function buildMode:SaveDBFile(keepSnapshot)
 	if not self.dbFileName then
 		self:OpenSaveAsPopup()
 		return
 	end
+	-- If not keeping snapshot, clear it before saving
+	local savedSnapshot, savedLabel, savedInputState, savedTreeProxy
+	if not keepSnapshot and self.compareSnapshot then
+		savedSnapshot = self.compareSnapshot
+		savedLabel = self.compareLabel
+		savedInputState = self.compareInputState
+		savedTreeProxy = self.compareTreeProxy
+		self.compareSnapshot = nil
+		self.compareLabel = nil
+		self.compareInputState = nil
+		self.compareTreeProxy = nil
+	end
 	local xmlText = self:SaveDB(self.dbFileName)
+	-- Restore snapshot state after save (so UI doesn't flash)
+	if savedSnapshot then
+		self.compareSnapshot = savedSnapshot
+		self.compareLabel = savedLabel
+		self.compareInputState = savedInputState
+		self.compareTreeProxy = savedTreeProxy
+	end
 	if not xmlText then
 		return true
 	end
