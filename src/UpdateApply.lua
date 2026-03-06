@@ -24,6 +24,11 @@ for _, line in ipairs(lines) do
 		local src, dst = args:match('"(.*)" "(.*)"')
 		dst = dst:gsub("{space}", " ")
 		print("Updating '"..dst.."'")
+		-- Ensure destination directory exists
+		local dstDir = dst:match("^(.*)/[^/]+$")
+		if dstDir and dstDir ~= "" then
+			MakeDir(dstDir)
+		end
 		local srcFile = io.open(src, "rb")
 		assert(srcFile, "couldn't open "..src)
 		local dstFile

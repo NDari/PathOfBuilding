@@ -1,4 +1,4 @@
--- cspell:words LÖVE
+-- cspell:words LÖVE cdef
 -- LOVE entry point for Path of Building
 -- Custom love.run() that mirrors SimpleGraphic's callback model
 
@@ -7,7 +7,28 @@
 -- Distribution (love-runtime/love love): loveSource is the love/ game directory, sibling of src/
 -- Both cases: love/ is alongside src/, so baseDir is always one level up.
 local loveSource = love.filesystem.getSource()
-local baseDir = loveSource .. "/.."
+
+-- Resolve ".." so paths are clean absolute paths throughout the app
+local ffi = require("ffi")
+if ffi.os == "Windows" then
+	pcall(ffi.cdef, [[char *_fullpath(char *absPath, const char *relPath, size_t maxLength);]])
+else
+	pcall(ffi.cdef, [[char *realpath(const char *path, char *resolved_path);]])
+end
+local function resolvePath(path)
+	if ffi.os == "Windows" then
+		local buf = ffi.new("char[?]", 1024)
+		local result = ffi.C._fullpath(buf, path, 1024)
+		if result ~= nil then return ffi.string(buf):gsub("\\", "/") end
+	else
+		local buf = ffi.new("char[?]", 4096)
+		local result = ffi.C.realpath(path, buf)
+		if result ~= nil then return ffi.string(buf) end
+	end
+	return path
+end
+
+local baseDir = resolvePath(loveSource .. "/..")
 local srcPath = baseDir .. "/src"
 
 -- Initialize the shim layer (injects all SimpleGraphic globals into _G)

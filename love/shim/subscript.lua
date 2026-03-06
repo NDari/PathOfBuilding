@@ -1,4 +1,4 @@
--- cspell:words LÖVE cext
+-- cspell:words LÖVE cext cdef
 -- shim/subscript.lua
 -- LaunchSubScript implementation using love.thread
 -- Sub-scripts run in separate Lua states (threads) with IPC via channels.
@@ -28,7 +28,25 @@ local logChannel = love.thread.getChannel("log_" .. SCRIPT_ID)
 
 -- Set up package paths to find C modules and pure Lua libs
 local loveSource = love.filesystem.getSource()
-local baseDir = loveSource .. "/.."
+local _ffi = require("ffi")
+if _ffi.os == "Windows" then
+	pcall(_ffi.cdef, [[char *_fullpath(char *absPath, const char *relPath, size_t maxLength);]])
+else
+	pcall(_ffi.cdef, [[char *realpath(const char *path, char *resolved_path);]])
+end
+local function _resolvePath(path)
+	if _ffi.os == "Windows" then
+		local buf = _ffi.new("char[?]", 1024)
+		local result = _ffi.C._fullpath(buf, path, 1024)
+		if result ~= nil then return _ffi.string(buf):gsub("\\", "/") end
+	else
+		local buf = _ffi.new("char[?]", 4096)
+		local result = _ffi.C.realpath(path, buf)
+		if result ~= nil then return _ffi.string(buf) end
+	end
+	return path
+end
+local baseDir = _resolvePath(loveSource .. "/..")
 local srcPath = baseDir .. "/src"
 local libPath = loveSource .. "/lib"
 local runtimeLuaPath = baseDir .. "/runtime/lua"
