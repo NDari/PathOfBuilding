@@ -15,14 +15,14 @@
 	<File name="lib/lcurl/safe.lua" part="love" sha1="336bb0d24f5987084776fbd34e3796ea0b040c4c" />
 	<File name="lib/lua-utf8.lua" part="love" sha1="21d847c2aa57142e5103ba0e1c70df3e62c1ff95" />
 	<File name="lib/lzip.lua" part="love" sha1="45e6b52a99f6de6d34fec3b650c20042e3eaed3c" />
-	<File name="main.lua" part="love" sha1="45807dbcf2ae5fb701821ed3ec733e713e1e11c5" />
+	<File name="main.lua" part="love" sha1="33cabd7779213a446105eb7145bf396fbc8decf5" />
 	<File name="shim/compat.lua" part="love" sha1="026354681d543eb916db3c4f23d07a0af1b4ceb4" />
 	<File name="shim/filesearch.lua" part="love" sha1="93d4e267e1c1314bb08d48d406a84ea988bb912c" />
 	<File name="shim/image.lua" part="love" sha1="1b14d2e9912615b6c2f3e63daafb59898c2a2c76" />
-	<File name="shim/init.lua" part="love" sha1="962691ae8ac379374badbdaa1344a1fb979581d4" />
+	<File name="shim/init.lua" part="love" sha1="3d8a7bc1ade1b8aabe58414a72f15647413015aa" />
 	<File name="shim/input.lua" part="love" sha1="04ab5f232628017f2d8f28484dae66f72132e6ff" />
 	<File name="shim/render.lua" part="love" sha1="9c05d728cd33246aad03493ce238ba9759b9d857" />
-	<File name="shim/subscript.lua" part="love" sha1="25cda2e1d25ca51b3051c3c16e90639f20dcd5e7" />
+	<File name="shim/subscript.lua" part="love" sha1="baf48aea123a0dfb4f79c1bb265ac94e714e2b3a" />
 	<File name="shim/system.lua" part="love" sha1="c449162c3cb96d3449d7e7d5d0c63834b023da42" />
 	<File name="shim/text.lua" part="love" sha1="548e8d7192063f7c2312e6bee6c5b2a72e4ba871" />
 	<File name="Assets/ascendancypassiveheaderleft.png" part="program" sha1="6a65683dcc3b14382dc083198fe9361454e91b15" />
@@ -361,7 +361,7 @@
 	<File name="Modules/ModTools.lua" part="program" sha1="2d0729447d3d81e283354ccd5875093331356467" />
 	<File name="Modules/PantheonTools.lua" part="program" sha1="1a1ae1e7f7032b93e5c5d462365cc85c3f3e8b2c" />
 	<File name="Modules/StatDescriber.lua" part="program" sha1="03824f856f8361efc2a3902c2d4a4a7c88a8ad25" />
-	<File name="UpdateApply.lua" part="program" sha1="fd03dbd5b750848ec7d9d1a8bcf8aff8b9ff6e89" />
+	<File name="UpdateApply.lua" part="program" sha1="62f219a429094aafed88e3c769bbe4b6bdd3dc7d" />
 	<File name="UpdateCheck.lua" part="program" sha1="2e32af913834cf66d523d1aa35094ddbaf812f50" />
 	<File name="TreeData/2_6/skill_sprite-3-32f639bbfc42783ca7ec218a787dd918.jpg" part="tree" sha1="dc7a2a0383847ac28eade8a31a57a8bfa7b298e4" />
 	<File name="TreeData/2_6/skill_sprite-active-3-3e73c4c4534433ecfc340c7287093bd5.png" part="tree" sha1="baa878007cfac73bee50958d25617b95c0e73a2d" />
