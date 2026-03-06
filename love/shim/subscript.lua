@@ -1,3 +1,4 @@
+-- cspell:words LÖVE cext
 -- shim/subscript.lua
 -- LaunchSubScript implementation using love.thread
 -- Sub-scripts run in separate Lua states (threads) with IPC via channels.
@@ -27,19 +28,9 @@ local logChannel = love.thread.getChannel("log_" .. SCRIPT_ID)
 
 -- Set up package paths to find C modules and pure Lua libs
 local loveSource = love.filesystem.getSource()
-local baseDir, srcPath, libPath
-
-if love.filesystem.isFused() then
-	-- Fused exe: src/, lib/, runtime/lua/ are alongside the executable
-	baseDir = loveSource:match("^(.+)[/\\]") or "."
-	srcPath = baseDir .. "/src"
-	libPath = baseDir .. "/lib"
-else
-	-- Dev mode: love/ directory is alongside src/, runtime/
-	baseDir = loveSource .. "/.."
-	srcPath = baseDir .. "/src"
-	libPath = loveSource .. "/lib"
-end
+local baseDir = loveSource .. "/.."
+local srcPath = baseDir .. "/src"
+local libPath = loveSource .. "/lib"
 local runtimeLuaPath = baseDir .. "/runtime/lua"
 
 package.path = libPath .. "/?.lua;"
@@ -54,6 +45,16 @@ local _cext = (jit.os == "Windows") and "dll" or "so"
 package.cpath = libPath .. "/?." .. _cext .. ";"
 	.. libPath .. "/?/?." .. _cext .. ";"
 	.. package.cpath
+
+-- Provide a real MakeDir implementation (funcList captures a no-op since MakeDir returns nil)
+local _isWindows = (jit.os == "Windows")
+MakeDir = function(path)
+	if _isWindows then
+		os.execute('mkdir "' .. path:gsub("/", "\\") .. '" 2>NUL')
+	else
+		os.execute('mkdir -p "' .. path .. '"')
+	end
+end
 
 -- Run the actual script
 local scriptFunc, loadErr = loadstring(%q)
