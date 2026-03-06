@@ -16,10 +16,10 @@
 	<File name="shim/compat.lua" part="love" sha1="026354681d543eb916db3c4f23d07a0af1b4ceb4" />
 	<File name="shim/filesearch.lua" part="love" sha1="93d4e267e1c1314bb08d48d406a84ea988bb912c" />
 	<File name="shim/image.lua" part="love" sha1="1b14d2e9912615b6c2f3e63daafb59898c2a2c76" />
-	<File name="shim/init.lua" part="love" sha1="efecd8c53d16f6abffaa4427da16fe0e61ce2a90" />
+	<File name="shim/init.lua" part="love" sha1="7edb3fa3838a678ca9c8623337075cf241bd23a2" />
 	<File name="shim/input.lua" part="love" sha1="04ab5f232628017f2d8f28484dae66f72132e6ff" />
 	<File name="shim/render.lua" part="love" sha1="9c05d728cd33246aad03493ce238ba9759b9d857" />
-	<File name="shim/subscript.lua" part="love" sha1="f61d15fdad4dcd0c7a9515ddd8edd4c0d099b26c" />
+	<File name="shim/subscript.lua" part="love" sha1="25cda2e1d25ca51b3051c3c16e90639f20dcd5e7" />
 	<File name="shim/system.lua" part="love" sha1="c449162c3cb96d3449d7e7d5d0c63834b023da42" />
 	<File name="shim/text.lua" part="love" sha1="548e8d7192063f7c2312e6bee6c5b2a72e4ba871" />
 	<File name="Assets/ascendancypassiveheaderleft.png" part="program" sha1="6a65683dcc3b14382dc083198fe9361454e91b15" />
