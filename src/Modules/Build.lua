@@ -2229,43 +2229,6 @@ function buildMode:RefreshStatList()
 	end
 	self:AddDisplayStatList(self.displayStats, self.calcsTab.mainEnv.player, snapPlayer)
 	self:InsertItemWarnings()
-	-- Comparison footer and structural diff
-	if self.compareSnapshot and self.compareLabel then
-		t_insert(statBoxList, { height = 10 })
-		t_insert(statBoxList, { height = 16, align = "CENTER_X", x = 140, "^7Comparing to: "..self.compareLabel })
-	end
-	if self.compareSnapshot and self.compareInputState and self.buildCompare then
-		local liveState = self.buildCompare.captureState(self)
-		local diffs = self.buildCompare.diffStates(self.compareInputState, liveState)
-		local hasChanges = (#diffs.addedNodes > 0 or #diffs.removedNodes > 0 or #diffs.changedSlots > 0 or #diffs.changedConfig > 0)
-		if hasChanges then
-			t_insert(statBoxList, { height = 10 })
-			t_insert(statBoxList, { height = 16, "^7What Changed:" })
-		end
-		if #diffs.addedNodes > 0 or #diffs.removedNodes > 0 then
-			t_insert(statBoxList, { height = 14, "^x808080Tree Changes:" })
-			for _, name in ipairs(diffs.addedNodes) do
-				t_insert(statBoxList, { height = 14, colorCodes.POSITIVE.."  + "..name })
-			end
-			for _, name in ipairs(diffs.removedNodes) do
-				t_insert(statBoxList, { height = 14, colorCodes.NEGATIVE.."  - "..name })
-			end
-		end
-		if #diffs.changedSlots > 0 then
-			t_insert(statBoxList, { height = 14, "^x808080Item Changes:" })
-			for _, change in ipairs(diffs.changedSlots) do
-				t_insert(statBoxList, { height = 14, "^7  "..change.slot..": "..colorCodes.NEGATIVE..(change.from or "empty")..
-					"^7 -> "..colorCodes.POSITIVE..(change.to or "empty") })
-			end
-		end
-		if #diffs.changedConfig > 0 then
-			t_insert(statBoxList, { height = 14, "^x808080Config Changes:" })
-			for _, change in ipairs(diffs.changedConfig) do
-				t_insert(statBoxList, { height = 14, "^7  "..change.key..": "..colorCodes.NEGATIVE..tostring(change.from)..
-					"^7 -> "..colorCodes.POSITIVE..tostring(change.to) })
-			end
-		end
-	end
 end
 
 function buildMode:CompareStatList(tooltip, statList, actor, baseOutput, compareOutput, header, nodeCount)
