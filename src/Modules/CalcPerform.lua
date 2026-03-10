@@ -1,3 +1,4 @@
+-- cspell:ignore incase Calclate
 -- Path of Building
 --
 -- Module: Calc Perform

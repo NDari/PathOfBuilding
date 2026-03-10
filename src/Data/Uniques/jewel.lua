@@ -1,4 +1,5 @@
 -- Item data (c) Grinding Gear Games
+-- cspell:words Unbreaking
 
 return {
 -- Jewel: Drop

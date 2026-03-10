@@ -1,3 +1,4 @@
+-- cspell:words Unbreaking
 -- Path of Building
 --
 -- Class: Timeless Jewel List Control

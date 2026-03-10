@@ -1,3 +1,4 @@
+-- cspell:words Unbreaking
 -- Path of Building
 --
 -- Module: Tree Tab

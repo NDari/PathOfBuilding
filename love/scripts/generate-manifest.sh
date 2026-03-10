@@ -43,8 +43,11 @@ sed -i "s|${UPSTREAM_BASE}|${FORK_BASE}|g" manifest.xml
 # Strip runtime entries (SimpleGraphic fonts, Windows DLLs) — not used by LÖVE
 sed -i '/part="runtime"/d' manifest.xml
 
-# Add branch="dev" to the Version element (idempotent)
-# Matches <Version number="X.Y.Z" /> or <Version number="X.Y.Z" branch="..." />
-sed -i -E 's|<Version number="([^"]+)"( branch="[^"]+")? />|<Version number="\1" branch="dev" />|' manifest.xml
+# Strip build artifact entries (Builds/ directory picked up by glob)
+sed -i '/name="Builds\//d' manifest.xml
 
-echo "Done. manifest.xml updated for ${OWNER_REPO} (branch=dev)"
+# Detect current git branch and set it in the Version element
+BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "dev")"
+sed -i -E "s|<Version number=\"([^\"]+)\"( branch=\"[^\"]+\")? />|<Version number=\"\1\" branch=\"${BRANCH}\" />|" manifest.xml
+
+echo "Done. manifest.xml updated for ${OWNER_REPO} (branch=${BRANCH})"

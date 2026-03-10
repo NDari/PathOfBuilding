@@ -373,6 +373,7 @@ function launch:ShowPrompt(r, g, b, str, func)
 end
 
 function launch:ShowErrMsg(fmt, ...)
+	ConPrintf("ERROR: " .. string.format(fmt, ...))
 	if not self.promptMsg then
 		local version = self.versionNumber and 
 			"^8v"..self.versionNumber..(self.versionBranch and " "..self.versionBranch or "")
