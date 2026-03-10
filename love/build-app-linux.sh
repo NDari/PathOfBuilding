@@ -77,9 +77,9 @@ fi
 
 # PoB source and data
 echo "Copying game data..."
-cp -r "$REPO_DIR/src" "$DIST_DIR/src"
+cp -r "$REPO_DIR/src/." "$DIST_DIR/src/"
 mkdir -p "$DIST_DIR/runtime/lua"
-cp -r "$REPO_DIR/runtime/lua" "$DIST_DIR/runtime/lua"
+cp -r "$REPO_DIR/runtime/lua/." "$DIST_DIR/runtime/lua/"
 
 # Manifest (into src/ where UpdateCheck.lua expects it)
 if [ -f "$REPO_DIR/manifest.xml" ]; then
