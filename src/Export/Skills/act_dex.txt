@@ -1,5 +1,7 @@
 -- Path of Building
 --
+-- cspell:words Dashof
+--
 -- Active Dexterity skill gems
 -- Skill data (c) Grinding Gear Games
 --

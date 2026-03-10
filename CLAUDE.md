@@ -1,4 +1,4 @@
-<!-- cspell:words pathofbuildingcommunity pathofbuilding miscdata LÖVE -->
+<!-- cspell:words pathofbuildingcommunity pathofbuilding miscdata LÖVE modcache Dashof -->
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.

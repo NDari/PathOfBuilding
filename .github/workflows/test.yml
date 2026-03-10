@@ -1,3 +1,4 @@
+# cspell:words pathofbuildingcommunity pathofbuilding modcache
 name: Run Tests
 on:
   push:
