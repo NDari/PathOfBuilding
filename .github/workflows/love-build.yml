@@ -45,7 +45,7 @@ jobs:
       - name: Generate release manifest
         run: |
           bash love/scripts/generate-manifest.sh
-          sed -i 's/branch="dev"/branch="master"/' manifest.xml
+          sed -i -E 's/branch="[^"]*"/branch="master"/' manifest.xml
 
       - name: Package
         run: |
@@ -138,7 +138,7 @@ jobs:
       - name: Generate release manifest
         run: |
           bash love/scripts/generate-manifest.sh
-          sed -i 's/branch="dev"/branch="master"/' manifest.xml
+          sed -i -E 's/branch="[^"]*"/branch="master"/' manifest.xml
 
       - name: Package
         run: |
