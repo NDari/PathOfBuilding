@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <PoBVersion>
-	<Version number="2.62.0" branch="HEAD" />
+	<Version number="2.62.0" branch="master" />
 	<Source part="default" url="https://raw.githubusercontent.com/NDari/PathOfBuilding/{branch}/" />
 	<Source part="program" url="https://raw.githubusercontent.com/NDari/PathOfBuilding/{branch}/src/" />
 	<Source part="tree" url="https://raw.githubusercontent.com/NDari/PathOfBuilding/{branch}/src/" />
@@ -20,7 +20,7 @@
 	<File name="shim/compat.lua" part="love" sha1="773f381efb72df6c07778291dfb610ecb2d52132" />
 	<File name="shim/filesearch.lua" part="love" sha1="ab6a343c086d8f7ef3b663da14dd3741a95c4835" />
 	<File name="shim/image.lua" part="love" sha1="1efce77d5b608c979058a2e66e9a2cfae1cadea3" />
-	<File name="shim/init.lua" part="love" sha1="7fffcd2c8248485c1ff502527618bed7e0aebad6" />
+	<File name="shim/init.lua" part="love" sha1="3b3f20f65747326a2bd9f1c12554c82597efb136" />
 	<File name="shim/input.lua" part="love" sha1="087c72ef5aa007a1842dc45569eac08fd9ee831f" />
 	<File name="shim/render.lua" part="love" sha1="4283f357e609f454c551662648b14f130f7dd5da" />
 	<File name="shim/subscript.lua" part="love" sha1="2c8ff435641808320e0fee14f8bc30c9b09156b6" />
