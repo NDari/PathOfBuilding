@@ -68,7 +68,15 @@ package.cpath = libPath .. "/?." .. _cext .. ";"
 local _isWindows = (jit.os == "Windows")
 MakeDir = function(path)
 	if _isWindows then
-		os.execute('mkdir "' .. path:gsub("/", "\\") .. '" 2>NUL')
+		-- Use CreateDirectoryA via FFI to avoid console window popup
+		pcall(_ffi.cdef, 'int CreateDirectoryA(const char*, void*); unsigned long GetFileAttributesA(const char*);')
+		local winPath = path:gsub("/", "\\")
+		-- Create parent directories if needed
+		local parent = winPath:match("^(.+)\\[^\\]+\\?$")
+		if parent and _ffi.C.GetFileAttributesA(parent) == 0xFFFFFFFF then
+			MakeDir(parent)
+		end
+		_ffi.C.CreateDirectoryA(winPath, nil)
 	else
 		os.execute('mkdir -p "' .. path .. '"')
 	end

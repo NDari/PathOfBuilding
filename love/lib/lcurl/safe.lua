@@ -30,18 +30,40 @@ end
 local isWindows = (jit.os == "Windows")
 local devNull = isWindows and "NUL" or "/dev/null"
 
+-- On Windows, load win32 helper to avoid console window popups
+local win32
+if isWindows then
+	local ok2, mod = pcall(require, "win32")
+	if ok2 then win32 = mod end
+end
+
 -- Verify system curl is available
-local curlCheck = io.popen("curl --version 2>" .. devNull, "r")
-if curlCheck then
-	local ver = curlCheck:read("*l")
-	curlCheck:close()
+local curlCheckCmd = "curl --version 2>" .. devNull
+local curlCheck
+if win32 then
+	-- Run curl version check without a popup window
+	local tmpFile = safeTmpName()
+	win32.executeNoWindow(curlCheckCmd .. ' > "' .. tmpFile .. '"')
+	local ver = readFile(tmpFile):match("[^\r\n]+")
+	os.remove(tmpFile)
 	if ver and ver:match("^curl") then
 		print("[LÖVE shim] Using system curl for HTTP: " .. ver:match("^curl%s+%S+"))
 	else
 		print("[LÖVE shim] WARNING: system curl not found — HTTP requests will fail")
 	end
 else
-	print("[LÖVE shim] WARNING: could not check for system curl")
+	curlCheck = io.popen(curlCheckCmd, "r")
+	if curlCheck then
+		local ver = curlCheck:read("*l")
+		curlCheck:close()
+		if ver and ver:match("^curl") then
+			print("[LÖVE shim] Using system curl for HTTP: " .. ver:match("^curl%s+%S+"))
+		else
+			print("[LÖVE shim] WARNING: system curl not found — HTTP requests will fail")
+		end
+	else
+		print("[LÖVE shim] WARNING: could not check for system curl")
+	end
 end
 
 ---------------------------------------------------------------------------
@@ -270,11 +292,19 @@ function easyMT:perform()
 	parts[#parts + 1] = shellQuote(url)
 
 	local cmd = table.concat(parts, " ") .. " 2>" .. devNull
-	local handle = io.popen(cmd, "r")
 	local meta = ""
-	if handle then
-		meta = handle:read("*a") or ""
-		handle:close()
+	if win32 then
+		-- Run curl without showing a console window; capture stdout via temp file
+		local metaFile = safeTmpName()
+		win32.executeNoWindow(cmd .. ' > "' .. metaFile .. '"')
+		meta = readFile(metaFile)
+		os.remove(metaFile)
+	else
+		local handle = io.popen(cmd, "r")
+		if handle then
+			meta = handle:read("*a") or ""
+			handle:close()
+		end
 	end
 
 	-- Read body and headers from temp files

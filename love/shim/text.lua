@@ -227,12 +227,14 @@ function M.inject()
 	end
 
 	function DrawStringCursorIndex(height, fontName, text, cursorX, cursorY)
-		if not text or text == "" then return 0 end
+		if not text or text == "" then return 1 end
 		local font = getFont(fontName, height)
 		local stripped = StripEscapes(text)
 		local len = #stripped
 
-		-- Binary search for closest character index
+		-- Find the closest character boundary to cursorX.
+		-- Boundary 0 is the left edge (x=0), boundary i is the right edge of char i.
+		-- PoB caret positions are 1-based: caret = boundary + 1.
 		local bestIdx = 0
 		local bestDist = math.abs(cursorX)
 		for i = 1, len do
@@ -244,9 +246,7 @@ function M.inject()
 			end
 		end
 
-		-- Need to map back from stripped index to original text index
-		-- Count escape characters before the stripped index
-		local origIdx = 0
+		-- Map from stripped index to original text index (accounting for escape sequences)
 		local strippedCount = 0
 		local pos = 1
 		while pos <= #text and strippedCount < bestIdx do
@@ -265,9 +265,9 @@ function M.inject()
 				pos = pos + 1
 			end
 		end
-		origIdx = pos - 1
 
-		return origIdx
+		-- Convert to 1-based caret position (boundary 0 → caret 1, boundary N → caret N+1)
+		return pos
 	end
 end
 

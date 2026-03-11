@@ -10,6 +10,13 @@ local lovePath
 local userPath
 local isWindows = (jit.os == "Windows")
 
+-- On Windows, load win32 helper to avoid console window popups
+local win32
+if isWindows then
+	local ok, mod = pcall(require, "win32")
+	if ok then win32 = mod end
+end
+
 function M.init(loveSource, srcDir)
 	lovePath = loveSource
 	srcPath = srcDir
@@ -121,7 +128,11 @@ function M.inject()
 		if isWindows then
 			local full = cmd or ""
 			if args then full = full .. " " .. args end
-			os.execute('start "" "' .. full .. '"')
+			if win32 then
+				win32.spawnNoWindow('"' .. full .. '"')
+			else
+				os.execute('start "" "' .. full .. '"')
+			end
 		else
 			if cmd and args then
 				os.execute(cmd .. " " .. args .. " &")
@@ -163,7 +174,11 @@ function M.inject()
 
 	function MakeDir(path)
 		if isWindows then
-			os.execute('mkdir "' .. path:gsub("/", "\\") .. '" 2>NUL')
+			if win32 then
+				win32.createDir(path)
+			else
+				os.execute('mkdir "' .. path:gsub("/", "\\") .. '" 2>NUL')
+			end
 		else
 			os.execute('mkdir -p "' .. path .. '"')
 		end
@@ -172,18 +187,30 @@ function M.inject()
 	function RemoveDir(path, recursive)
 		if isWindows then
 			local winPath = path:gsub("/", "\\")
-			if recursive then
-				os.execute('rmdir /s /q "' .. winPath .. '" 2>NUL')
-			else
-				os.execute('rmdir "' .. winPath .. '" 2>NUL')
-			end
-			-- Check if removal succeeded using dir
-			local checkHandle = io.popen('dir "' .. winPath .. '" 2>NUL')
-			if checkHandle then
-				local result = checkHandle:read("*l")
-				checkHandle:close()
-				if result then
+			if win32 then
+				if recursive then
+					win32.executeNoWindow('rmdir /s /q "' .. winPath .. '" 2>NUL')
+				else
+					win32.executeNoWindow('rmdir "' .. winPath .. '" 2>NUL')
+				end
+				-- Check if removal succeeded via GetFileAttributesA
+				local ffi = require("ffi")
+				if ffi.C.GetFileAttributesA(winPath) ~= 0xFFFFFFFF then
 					return false, "Failed to remove: " .. path
+				end
+			else
+				if recursive then
+					os.execute('rmdir /s /q "' .. winPath .. '" 2>NUL')
+				else
+					os.execute('rmdir "' .. winPath .. '" 2>NUL')
+				end
+				local checkHandle = io.popen('dir "' .. winPath .. '" 2>NUL')
+				if checkHandle then
+					local result = checkHandle:read("*l")
+					checkHandle:close()
+					if result then
+						return false, "Failed to remove: " .. path
+					end
 				end
 			end
 			return true
