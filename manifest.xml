@@ -12,19 +12,20 @@
 	<File name="fonts/.gitkeep" part="love" sha1="da39a3ee5e6b4b0d3255bfef95601890afd80709" />
 	<File name="fonts/BitstreamVeraSansMono.ttf" part="love" sha1="2c2e2ded3c903b5186f955871109f084edef4dbe" />
 	<File name="fonts/FontinSmallCaps.ttf" part="love" sha1="49fbba15b8e4f0cd89a817574f9a307254ab75c0" />
-	<File name="lib/lcurl/safe.lua" part="love" sha1="0ef70c1255d45c7a19b702137017110330a89f0d" />
+	<File name="lib/lcurl/safe.lua" part="love" sha1="2da065b7207e5ddd50135bdd7679b12b02d34339" />
 	<File name="lib/lua-utf8.lua" part="love" sha1="6cd29e50659926ae35168d865415ea722054f19f" />
 	<File name="lib/lzip.lua" part="love" sha1="8da3fcd737b049ed05279160c24cb3d80f80550d" />
+	<File name="lib/win32.lua" part="love" sha1="97e2d41235ab8ce2d4961e6d044872d0843470f1" />
 	<File name="main.lua" part="love" sha1="33cabd7779213a446105eb7145bf396fbc8decf5" />
 	<File name="shim/compat.lua" part="love" sha1="773f381efb72df6c07778291dfb610ecb2d52132" />
 	<File name="shim/filesearch.lua" part="love" sha1="ab6a343c086d8f7ef3b663da14dd3741a95c4835" />
 	<File name="shim/image.lua" part="love" sha1="1efce77d5b608c979058a2e66e9a2cfae1cadea3" />
-	<File name="shim/init.lua" part="love" sha1="5aa02b9cf123652b4244e4745b8a3e6b088c9b90" />
+	<File name="shim/init.lua" part="love" sha1="7fffcd2c8248485c1ff502527618bed7e0aebad6" />
 	<File name="shim/input.lua" part="love" sha1="087c72ef5aa007a1842dc45569eac08fd9ee831f" />
 	<File name="shim/render.lua" part="love" sha1="4283f357e609f454c551662648b14f130f7dd5da" />
-	<File name="shim/subscript.lua" part="love" sha1="baf48aea123a0dfb4f79c1bb265ac94e714e2b3a" />
-	<File name="shim/system.lua" part="love" sha1="23e1e65dc4cdf464cec33c6dea5e586d644b6e16" />
-	<File name="shim/text.lua" part="love" sha1="0da327660a4d8641f28aee0b942599973e17720e" />
+	<File name="shim/subscript.lua" part="love" sha1="2c8ff435641808320e0fee14f8bc30c9b09156b6" />
+	<File name="shim/system.lua" part="love" sha1="a89bf463c897b8e3a4857483033c9997ee847622" />
+	<File name="shim/text.lua" part="love" sha1="d9ee30d01b11f98c9748acca39f34f6cff03aa5f" />
 	<File name="Assets/ascendancypassiveheaderleft.png" part="program" sha1="6a65683dcc3b14382dc083198fe9361454e91b15" />
 	<File name="Assets/ascendancypassiveheadermiddle.png" part="program" sha1="79ccf100c4154d8f65544e2b32d44a612b7007c0" />
 	<File name="Assets/ascendancypassiveheaderright.png" part="program" sha1="dbb86c1b8b51019379e52cd1f8b2a9edee07a3f6" />
