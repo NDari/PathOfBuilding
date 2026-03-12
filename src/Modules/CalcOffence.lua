@@ -3072,15 +3072,11 @@ function calcs.offence(env, actor, activeSkill)
 				if damageType ~= addedDamageRedirectType then
 					for _, value in ipairs(skillModList:Tabulate("BASE", cfg, damageType.."Min")) do
 						local mod = value.mod
-						if mod.source ~= "Skill:ElementalHit" then
 							skillModList:ConvertMod(damageType.."Min", addedDamageRedirectType.."Min", "BASE", mod.value, mod.source, mod.flags, mod.keywordFlags, { type = "Cryogenesis Added Damage" }, unpack(mod))
-						end
 					end
 					for _, value in ipairs(skillModList:Tabulate("BASE", cfg, damageType.."Max")) do
 						local mod = value.mod
-						if mod.source ~= "Skill:ElementalHit" then
 							skillModList:ConvertMod(damageType.."Max", addedDamageRedirectType.."Max", "BASE", mod.value, mod.source, mod.flags, mod.keywordFlags, { type = "Cryogenesis Added Damage" }, unpack(mod))
-						end
 					end
 				end
 			end
