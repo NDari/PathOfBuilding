@@ -1433,7 +1433,7 @@ function calcs.perform(env, skipEHP)
 	local maxRightActiveMagicUtilityCount = modDB:Sum("BASE", nil, "RightActiveMagicUtilityFlasks")
 	if maxLeftActiveMagicUtilityCount > 0 or maxRightActiveMagicUtilityCount > 0 then
 		local magicUtilityFlasks = {}
-		for _, slot in pairs(env.build.itemsTab.orderedSlots) do
+		for _, slot in ipairs(env.build.itemsTab.orderedSlots) do
 			local item = env.build.itemsTab.items[slot.selItemId]
 			if item and item.type == "Flask" and item.rarity == "MAGIC"
 				and not (item.baseName:match("Life Flask") or item.baseName:match("Mana Flask") or item.baseName:match("Hybrid Flask")) then

@@ -680,7 +680,7 @@ function calcs.initEnv(build, mode, override, specEnv)
 	if not accelerate.requirementsItems then
 		local items = {}
 		local jewelLimits = {}
-		for _, slot in pairs(build.itemsTab.orderedSlots) do
+		for _, slot in ipairs(build.itemsTab.orderedSlots) do
 			local slotName = slot.slotName
 			if slotName == "Graft 1" or slotName == "Graft 2" then
 				if not build.spec.treeVersion:find("3_27") then
@@ -830,7 +830,7 @@ function calcs.initEnv(build, mode, override, specEnv)
 					end
 				end
 			end
-			for _, slot in pairs(build.itemsTab.orderedSlots) do
+			for _, slot in ipairs(build.itemsTab.orderedSlots) do
 				local slotName = slot.slotName
 				if items[slotName] then
 					local srcList = items[slotName].modList or items[slotName].slotModList[slot.slotNum]
@@ -881,7 +881,7 @@ function calcs.initEnv(build, mode, override, specEnv)
 		-- Track which flask slot (1-5) each flask is in, for adjacency checks
 		env.flaskSlotMap = { }
 		env.flaskSlotOccupied = { }
-		for _, slot in pairs(build.itemsTab.orderedSlots) do
+		for _, slot in ipairs(build.itemsTab.orderedSlots) do
 			local slotName = slot.slotName
 			local item = items[slotName]
 			if item and item.type == "Flask" then
