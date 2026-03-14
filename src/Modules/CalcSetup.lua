@@ -1082,8 +1082,8 @@ function calcs.initEnv(build, mode, override, specEnv)
 							env.itemModDB:ScaleAddMod(mod, scale)
 						end
 					end
-				elseif item.type == "Quiver" and items["Weapon 1"] and items["Weapon 1"].name:match("Widowhail") then
-					local widowHailMod=(1 + (items["Weapon 1"].baseModList:Sum("INC", nil, "EffectOfBonusesFromQuiver") + env.initialNodeModDB:Sum("INC", nil, "EffectOfBonusesFromQuiver") or 100) / 100)
+				elseif item.type == "Quiver" and (items["Weapon 1"] and items["Weapon 1"].name:match("Widowhail") or env.initialNodeModDB:Sum("INC", nil, "EffectOfBonusesFromQuiver") > 0) then
+					local widowHailMod= (1 + (items["Weapon 1"] and items["Weapon 1"].baseModList:Sum("INC", nil, "EffectOfBonusesFromQuiver") + env.initialNodeModDB:Sum("INC", nil, "EffectOfBonusesFromQuiver") or 100) / 100)
 					scale = scale * widowHailMod
 					env.modDB:NewMod("WidowHailMultiplier", "BASE", widowHailMod, "Widowhail")
 					local combinedList = new("ModList")
