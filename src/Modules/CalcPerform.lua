@@ -306,6 +306,15 @@ local function doActorAttribsConditions(env, actor)
 		if modDB:Flag(nil, "GloomShrine") then
 			modDB:NewMod("NonChaosDamageGainAsChaos", "BASE", m_floor(10 * shrineEffectMod), "Gloom Shrine")
 		end
+		if modDB:Flag(nil, "GreaterFreezingShrine") then
+			modDB:NewMod("PhysicalDamageGainAsCold", "BASE", m_floor(30 * shrineEffectMod), "Greater Freezing Shrine")
+		end
+		if modDB:Flag(nil, "GreaterShockingShrine") then
+			modDB:NewMod("PhysicalDamageGainAsLightning", "BASE", m_floor(30 * shrineEffectMod), "Greater Shocking Shrine")
+		end
+		if modDB:Flag(nil, "GreaterSkeletalShrine") then
+			modDB:NewMod("PhysicalDamageGainAsChaos", "BASE", m_floor(30 * shrineEffectMod), "Greater Skeletal Shrine")
+		end
 		if modDB:Flag(nil, "ImpenetrableShrine") then
 			modDB:NewMod("Armour", "INC", m_floor(100 * shrineEffectMod), "Impenetrable Shrine")
 			modDB:NewMod("Evasion", "INC", m_floor(100 * shrineEffectMod), "Impenetrable Shrine")
@@ -1472,6 +1481,20 @@ function calcs.perform(env, skipEHP)
 	end
 
 	-- Merge flask modifiers
+	local function getFlaskInstantRecovery(item)
+		local instantPerc = item.flaskData.instantPerc or 0
+		if modDB:Flag(nil, "Condition:LowLife") then
+			instantPerc = instantPerc + (item.flaskData.instantLowLifePerc or 0)
+		end
+		if item.base.flask.life then
+			instantPerc = instantPerc + modDB:Sum("BASE", nil, "LifeFlaskInstantRecovery")
+		end
+		if item.base.flask.mana then
+			instantPerc = instantPerc + modDB:Sum("BASE", nil, "ManaFlaskInstantRecovery")
+		end
+		return m_min(100, instantPerc)
+	end
+
 	local function calcFlaskRecovery(type, item)
 		local out = {}
 		local lType = type:lower()
@@ -1483,7 +1506,7 @@ function calcs.perform(env, skipEHP)
 		local name = item.name
 		local base = item.flaskData[lType.."Base"]
 		local dur = item.flaskData.duration
-		local instPerc = item.flaskData.instantPerc
+		local instPerc = getFlaskInstantRecovery(item)
 		local flaskRecInc = modDB:Sum("INC", nil, "Flask"..type.."Recovery")
 		local flaskRecMore = modDB:More(nil, "Flask"..type.."Recovery")
 		local flaskRateInc = modDB:Sum("INC", nil, "Flask"..type.."RecoveryRate")
@@ -1588,20 +1611,22 @@ function calcs.perform(env, skipEHP)
 		for item in pairs(flasks) do
 			flaskBuffsPerBase[item.baseName] = flaskBuffsPerBase[item.baseName] or {}
 			flaskBuffsPerBaseNonPlayer[item.baseName] = flaskBuffsPerBaseNonPlayer[item.baseName] or {}
-			flaskConditions["UsingFlask"] = true
-			flaskConditionsNonUtility["UsingFlask"] = true
-			flaskConditions["Using"..item.baseName:gsub("%s+", "")] = true
-			haveFlask["Have"..item.baseName:gsub("%s+", "")] = true
-			if item.base.flask.life or item.base.flask.mana then
-				flaskConditionsNonUtility["Using"..item.baseName:gsub("%s+", "")] = true
-			end
-			if item.base.flask.life and not modDB:Flag(nil, "CannotRecoverLifeOutsideLeech") then
-				flaskConditions["UsingLifeFlask"] = true
-				flaskConditionsNonUtility["UsingLifeFlask"] = true
-			end
-			if item.base.flask.mana then
-				flaskConditions["UsingManaFlask"] = true
-				flaskConditionsNonUtility["UsingManaFlask"] = true
+			local instantPerc = getFlaskInstantRecovery(item)
+			if instantPerc < 100 then
+				flaskConditions["UsingFlask"] = true
+				flaskConditions["Using"..item.baseName:gsub("%s+", "")] = true
+				if item.base.flask.life or item.base.flask.mana then
+					flaskConditionsNonUtility["UsingFlask"] = true
+					flaskConditionsNonUtility["Using"..item.baseName:gsub("%s+", "")] = true
+				end
+				if item.base.flask.life and not modDB:Flag(nil, "CannotRecoverLifeOutsideLeech") then
+					flaskConditions["UsingLifeFlask"] = true
+					flaskConditionsNonUtility["UsingLifeFlask"] = true
+				end
+				if item.base.flask.mana then
+					flaskConditions["UsingManaFlask"] = true
+					flaskConditionsNonUtility["UsingManaFlask"] = true
+				end
 			end
 
 			if onlyRecovery then
@@ -1617,9 +1642,6 @@ function calcs.perform(env, skipEHP)
 			else
 				calcFlaskMods(item, item.baseName, item.buffModList, item.modList)
 			end
-		end
-		for haveFlask, status in pairs(haveFlask) do
-			modDB.conditions[haveFlask] = status
 		end
 		if modDB:Flag(nil, "UtilityFlasksDoNotApplyToPlayer") then
 			for flaskCond, status in pairs(flaskConditionsNonUtility) do

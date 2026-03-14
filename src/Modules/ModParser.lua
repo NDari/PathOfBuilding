@@ -851,9 +851,19 @@ local modNameList = {
 	["chaotic might"] = "Condition:ChaoticMight",
 	["lesser brutal shrine buff"] = "Condition:LesserBrutalShrine",
 	["lesser massive shrine buff"] = "Condition:LesserMassiveShrine",
+	["acceleration shrine buff"] = "Condition:AccelerationShrine",
+	["brutal shrine buff"] = "Condition:BrutalShrine",
 	["diamond shrine buff"] = "Condition:DiamondShrine",
+	["echoing shrine buff"] = "Condition:EchoingShrine",
+	["gloom shrine buff"] = "Condition:GloomShrine",
+	["greater freezing shrine buff"] = "Condition:GreaterFreezingShrine",
+	["greater shocking shrine buff"] = "Condition:GreaterShockingShrine",
+	["greater skeletal shrine buff"] = "Condition:GreaterSkeletalShrine",
+	["impenetrable shrine buff"] = "Condition:ImpenetrableShrine",
 	["massive shrine buff"] = "Condition:MassiveShrine",
-	["resistance shrine buff"] = "Condition:ResistanceShrine"
+	["replenishing shrine buff"] = "Condition:ReplenishingShrine",
+	["resistance shrine buff"] = "Condition:ResistanceShrine",
+	["resonating shrine buff"] = "Condition:ResonatingShrine",
 }
 
 -- List of modifier flags
@@ -1811,6 +1821,9 @@ local modTagList = {
 	["if you haven't gained a power charge recently"] = { tag = { type = "Condition", var = "GainedPowerChargeRecently", neg = true } },
 	["if you haven't gained a frenzy charge recently"] = { tag = { type = "Condition", var = "GainedFrenzyChargeRecently", neg = true } },
 	["if you've stopped taking damage over time recently"] = { tag = { type = "Condition", var = "StoppedTakingDamageOverTimeRecently" } },
+	["if you've used an amethyst flask recently"] = { tag = { type = "Condition", var = "UsedAmethystFlaskRecently" } },
+	["if you've used a sapphire flask recently"] = { tag = { type = "Condition", var = "UsedSapphireFlaskRecently" } },
+	["if you've used a topaz flask recently"] = { tag = { type = "Condition", var = "UsedTopazFlaskRecently" } },
 	["during soul gain prevention"] = { tag = { type = "Condition", var = "SoulGainPrevention" } },
 	["if you detonated mines recently"] = { tag = { type = "Condition", var = "DetonatedMinesRecently" } },
 	["if you detonated a mine recently"] = { tag = { type = "Condition", var = "DetonatedMinesRecently" } },
@@ -2980,10 +2993,11 @@ local specialModList = {
 		mod("InstantManaLeech", "BASE", num, nil, ModFlag.Hit, { type = "Condition", var = "{Hand}Attack" }, { type = "SkillType", skillType = SkillType.Attack }, { type = "Multiplier", var = "EnemyPower"}),
 		mod("InstantEnergyShieldLeech", "BASE", num, nil, ModFlag.Hit, { type = "Condition", var = "{Hand}Attack" }, { type = "SkillType", skillType = SkillType.Attack }, { type = "Multiplier", var = "EnemyPower"}),
 	} end,
-	["instant recovery"] = {  mod("FlaskInstantRecovery", "BASE", 100) },
+	["instant recovery"] = { mod("FlaskInstantRecovery", "BASE", 100) },
+	["(%d+)%% of recovery applied instantly"] = function(num) return { mod("FlaskInstantRecovery", "BASE", num) } end,
+	["instant recovery when on low life"] = { mod("FlaskLowLifeInstantRecovery", "BASE", 100), mod("Dummy", "DUMMY", 1, "", { type = "Condition", var = "LowLife" }) },
 	["life flasks used while on low life apply recovery instantly"] = { mod("LifeFlaskInstantRecovery", "BASE", 100, { type = "Condition", var = "LowLife" }) },
 	["mana flasks used while on low mana apply recovery instantly"] = { mod("ManaFlaskInstantRecovery", "BASE", 100, { type = "Condition", var = "LowMana" }) },
-	["(%d+)%% of recovery applied instantly"] = function(num) return { mod("FlaskInstantRecovery", "BASE", num) } end,
 	["has no attribute requirements"] = { flag("NoAttributeRequirements") },
 	["trigger a socketed spell when you attack with this weapon"] = { mod("ExtraSupport", "LIST", { skillId = "SupportTriggerSpellOnAttack", level = 1 }, { type = "SocketedIn", slotName = "{SlotName}" }) },
 	["trigger a socketed spell when you attack with this weapon, with a ([%d%.]+) second cooldown"] = { mod("ExtraSupport", "LIST", { skillId = "SupportTriggerSpellOnAttack", level = 1 }, { type = "SocketedIn", slotName = "{SlotName}" }) },
@@ -4069,6 +4083,10 @@ local specialModList = {
 	["while a pinnacle atlas boss is in your presence, inflict (%w+) exposure on hit, applying %-(%d+)%% to (%w+) resistance"] = function(_, element1,  num, element2) return {
 		mod( firstToUpper(element1).."ExposureChance", "BASE", 100, { type = "ActorCondition", actor = "enemy", var = "PinnacleBoss" }, { type = "Condition", var = "Effective" }),
 		mod("EnemyModifier", "LIST", { mod = mod(firstToUpper(element2).."Exposure", "BASE", -num, { type = "Condition", var = "PinnacleBoss" }) }, { type = "Condition", var = "Effective" }),
+	} end,
+	["inflict fire exposure on hit against enemies with (%d+) cinderflame, applying %-(%d+)%% to (%w+) resistance"] = function(cinderflame, _,  num, element) return {
+		mod( "FireExposureChance", "BASE", 100, { type = "Condition", var = "Effective" }, { type = "MultiplierThreshold", var = "CinderflameStacks", threshold = cinderflame }),
+		mod("EnemyModifier", "LIST", { mod = mod(firstToUpper(element).."Exposure", "BASE", -num) }, { type = "Condition", var = "Effective" }, { type = "MultiplierThreshold", var = "CinderflameStacks", threshold = cinderflame }),
 	} end,
 	["fire exposure you inflict applies an extra (%-?%d+)%% to fire resistance"] = function(num) return { mod("ExtraFireExposure", "BASE", num) } end,
 	["cold exposure you inflict applies an extra (%-?%d+)%% to cold resistance"] = function(num) return { mod("ExtraColdExposure", "BASE", num) } end,
@@ -5790,9 +5808,19 @@ local flagTypes = {
 	["debilitated"] = "Condition:Debilitated",
 	["lesser brutal shrine buff"] = "Condition:LesserBrutalShrine",
 	["lesser massive shrine buff"] = "Condition:LesserMassiveShrine",
+	["acceleration shrine buff"] = "Condition:AccelerationShrine",
+	["brutal shrine buff"] = "Condition:BrutalShrine",
 	["diamond shrine buff"] = "Condition:DiamondShrine",
+	["echoing shrine buff"] = "Condition:EchoingShrine",
+	["gloom shrine buff"] = "Condition:GloomShrine",
+	["greater freezing shrine buff"] = "Condition:GreaterFreezingShrine",
+	["greater shocking shrine buff"] = "Condition:GreaterShockingShrine",
+	["greater skeletal shrine buff"] = "Condition:GreaterSkeletalShrine",
+	["impenetrable shrine buff"] = "Condition:ImpenetrableShrine",
 	["massive shrine buff"] = "Condition:MassiveShrine",
-	["resistance shrine buff"] = "Condition:ResistanceShrine"
+	["replenishing shrine buff"] = "Condition:ReplenishingShrine",
+	["resistance shrine buff"] = "Condition:ResistanceShrine",
+	["resonating shrine buff"] = "Condition:ResonatingShrine",
 }
 
 -- Build active skill name lookup

@@ -86,6 +86,9 @@ function calcs.initModDB(env, modDB)
 	modDB:NewMod("DivineShrine", "FLAG", true, "Base", { type = "Condition", var = "DivineShrine" })
 	modDB:NewMod("EchoingShrine", "FLAG", true, "Base", { type = "Condition", var = "EchoingShrine" })
 	modDB:NewMod("GloomShrine", "FLAG", true, "Base", { type = "Condition", var = "GloomShrine" })
+	modDB:NewMod("GreaterFreezingShrine", "FLAG", true, "Base", { type = "Condition", var = "GreaterFreezingShrine" })
+	modDB:NewMod("GreaterShockingShrine", "FLAG", true, "Base", { type = "Condition", var = "GreaterShockingShrine" })
+	modDB:NewMod("GreaterSkeletalShrine", "FLAG", true, "Base", { type = "Condition", var = "GreaterSkeletalShrine" })
 	modDB:NewMod("ImpenetrableShrine", "FLAG", true, "Base", { type = "Condition", var = "ImpenetrableShrine" })
 	modDB:NewMod("MassiveShrine", "FLAG", true, "Base", { type = "Condition", var = "MassiveShrine" })
 	modDB:NewMod("ReplenishingShrine", "FLAG", true, "Base", { type = "Condition", var = "ReplenishingShrine" })
@@ -882,6 +885,7 @@ function calcs.initEnv(build, mode, override, specEnv)
 			local slotName = slot.slotName
 			local item = items[slotName]
 			if item and item.type == "Flask" then
+				env.itemModDB.conditions["Have"..item.baseName:gsub("%s+", "")] = true
 				if slot.active then
 					env.flasks[item] = true
 				end
