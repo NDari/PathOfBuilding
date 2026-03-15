@@ -4,17 +4,6 @@
 
 [Full Changelog](https://github.com/PathOfBuildingCommunity/PathOfBuilding/compare/v2.62.0...v2.63.0)
 
-
-## What's Changed
-### New to Path of Building
-- Add Holy Strike FullDPS override to not overstate melee damage [\#9589](https://github.com/PathOfBuildingCommunity/PathOfBuilding/pull/9589) ([LocalIdentity](https://github.com/LocalIdentity))
-- Added unique The Broken Elegy [\#9590](https://github.com/PathOfBuildingCommunity/PathOfBuilding/pull/9590) ([MrHB212](https://github.com/MrHB212))
-- Add radius values for Queen's Demand skills [\#9598](https://github.com/PathOfBuildingCommunity/PathOfBuilding/pull/9598) ([Wires77](https://github.com/Wires77))
-- Add new 3.28 Uniques [\#9618](https://github.com/PathOfBuildingCommunity/PathOfBuilding/pull/9618) ([LocalIdentity](https://github.com/LocalIdentity))
-- Add parsing for Hallowing Flame mods [\#9544](https://github.com/PathOfBuildingCommunity/PathOfBuilding/pull/9544) ([Paliak](https://github.com/Paliak))
-- Add support for defaulting gems to level 1 [\#9514](https://github.com/PathOfBuildingCommunity/PathOfBuilding/pull/9514) ([Peechey](https://github.com/Peechey))
-* Add support for searching all sockets for Timeless Jewel finder <!-- Release notes generated using configuration in .github/release.yml at dev -->
-
 ## What's Changed
 ### New to Path of Building
 - Add new 3.28 Uniques and add support for their mods [\#9618](https://github.com/PathOfBuildingCommunity/PathOfBuilding/pull/9618), [\#9589](https://github.com/PathOfBuildingCommunity/PathOfBuilding/pull/9589) ([LocalIdentity](https://github.com/LocalIdentity), [MrHB212](https://github.com/MrHB212))

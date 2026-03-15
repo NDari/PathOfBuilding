@@ -1,13 +1,14 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <PoBVersion>
-	<Version number="2.62.0" branch="master" />
-	<Source part="default" url="https://raw.githubusercontent.com/NDari/PathOfBuilding/{branch}/" />
-	<Source part="program" url="https://raw.githubusercontent.com/NDari/PathOfBuilding/{branch}/src/" />
-	<Source part="tree" url="https://raw.githubusercontent.com/NDari/PathOfBuilding/{branch}/src/" />
+	<Version number="2.63.0" branch="master" />
+	<Source part="default" url="https://raw.githubusercontent.com/PathOfBuildingCommunity/PathOfBuilding/{branch}/" />
+	<Source part="runtime" platform="win32" url="https://raw.githubusercontent.com/PathOfBuildingCommunity/PathOfBuilding/{branch}/runtime/" />
+	<Source part="program" url="https://raw.githubusercontent.com/PathOfBuildingCommunity/PathOfBuilding/{branch}/src/" />
+	<Source part="tree" url="https://raw.githubusercontent.com/PathOfBuildingCommunity/PathOfBuilding/{branch}/src/" />
 	<Source part="love" url="https://raw.githubusercontent.com/NDari/PathOfBuilding/{branch}/love/" />
-	<File name="changelog.txt" part="default" sha1="7cb5804bef066b6e915a017342b696e39f51465f" />
-	<File name="help.txt" part="default" sha1="b1287f429e40ffdb96a2aff30b20adfa1540cf66" />
-	<File name="LICENSE.md" part="default" sha1="be578b61d2b3381db4135c02101b2b0fc34fdeac" />
+	<File name="changelog.txt" part="default" sha1="45816191f0195aa78c439e64c8511195243eafcb" />
+	<File name="help.txt" part="default" sha1="e486cb63a78f5ca355430b67fa23e02fd30f5771" />
+	<File name="LICENSE.md" part="default" sha1="c77635aa1ba0a2ffe8eb72f93b3376e3a3d2041a" />
 	<File name="build-app-macos.sh" part="love" sha1="bcfa23274c94be9e05290330067797dca089b12d" />
 	<File name="conf.lua" part="love" sha1="71b57fe7d5f9ee87e05de9ba97dc48f846839573" />
 	<File name="fonts/.gitkeep" part="love" sha1="da39a3ee5e6b4b0d3255bfef95601890afd80709" />
