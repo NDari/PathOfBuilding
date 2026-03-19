@@ -8,6 +8,7 @@
 	<File name="changelog.txt" part="default" sha1="7cb5804bef066b6e915a017342b696e39f51465f" />
 	<File name="help.txt" part="default" sha1="b1287f429e40ffdb96a2aff30b20adfa1540cf66" />
 	<File name="LICENSE.md" part="default" sha1="be578b61d2b3381db4135c02101b2b0fc34fdeac" />
+	<File name="build-app-macos.sh" part="love" sha1="bcfa23274c94be9e05290330067797dca089b12d" />
 	<File name="conf.lua" part="love" sha1="71b57fe7d5f9ee87e05de9ba97dc48f846839573" />
 	<File name="fonts/.gitkeep" part="love" sha1="da39a3ee5e6b4b0d3255bfef95601890afd80709" />
 	<File name="fonts/BitstreamVeraSansMono.ttf" part="love" sha1="2c2e2ded3c903b5186f955871109f084edef4dbe" />
@@ -20,7 +21,7 @@
 	<File name="shim/compat.lua" part="love" sha1="773f381efb72df6c07778291dfb610ecb2d52132" />
 	<File name="shim/filesearch.lua" part="love" sha1="ab6a343c086d8f7ef3b663da14dd3741a95c4835" />
 	<File name="shim/image.lua" part="love" sha1="1efce77d5b608c979058a2e66e9a2cfae1cadea3" />
-	<File name="shim/init.lua" part="love" sha1="3b3f20f65747326a2bd9f1c12554c82597efb136" />
+	<File name="shim/init.lua" part="love" sha1="3f7677d7b1cfb7749e65951620cd9d3c1db1cf0a" />
 	<File name="shim/input.lua" part="love" sha1="087c72ef5aa007a1842dc45569eac08fd9ee831f" />
 	<File name="shim/render.lua" part="love" sha1="4283f357e609f454c551662648b14f130f7dd5da" />
 	<File name="shim/subscript.lua" part="love" sha1="2c8ff435641808320e0fee14f8bc30c9b09156b6" />
