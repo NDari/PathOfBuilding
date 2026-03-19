@@ -195,10 +195,83 @@ jobs:
           retention-days: 5
 
   # ------------------------------------------------------------------
+  # macOS (universal binary — targets Apple Silicon / ARM64)
+  # ------------------------------------------------------------------
+  build-macos:
+    needs: [build-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Inject version tag
+        run: sed -i "s/LOVE_VERSION_TAG = \"love-v[^\"]*\"/LOVE_VERSION_TAG = \"${GITHUB_REF_NAME}\"/" love/shim/init.lua
+
+      - name: Download LÖVE macOS
+        run: |
+          curl -L -o love-macos.zip \
+            "https://github.com/love2d/love/releases/download/${{ env.LOVE_VERSION }}/love-${{ env.LOVE_VERSION }}-macos.zip"
+          unzip -q love-macos.zip
+
+      - name: Set execute bit on LÖVE binary
+        run: chmod +x love.app/Contents/MacOS/love
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-manifest
+
+      - name: Package
+        run: |
+          mkdir -p dist/PathOfBuilding/love
+          mkdir -p dist/PathOfBuilding/src
+          mkdir -p dist/PathOfBuilding/runtime
+
+          # LÖVE runtime (intact app bundle)
+          cp -r love.app dist/PathOfBuilding/love.app
+
+          # Game directory (love/)
+          cp love/main.lua love/conf.lua dist/PathOfBuilding/love/
+          cp -r love/shim dist/PathOfBuilding/love/shim
+          cp -r love/lib  dist/PathOfBuilding/love/lib
+          [ -d love/fonts ] && cp -r love/fonts dist/PathOfBuilding/love/fonts
+
+          # PoB source and data
+          cp -r src/. dist/PathOfBuilding/src/
+          cp manifest.xml dist/PathOfBuilding/src/manifest.xml
+          mkdir -p dist/PathOfBuilding/runtime/lua
+          cp -r runtime/lua/. dist/PathOfBuilding/runtime/lua/
+
+          # Extra files
+          for f in changelog.txt help.txt LICENSE.md; do
+            [ -f "$f" ] && cp "$f" dist/PathOfBuilding/src/"$f"
+          done
+
+          # License at top level
+          [ -f LICENSE.md ] && cp LICENSE.md dist/PathOfBuilding/
+
+          # Launcher script
+          cat > dist/PathOfBuilding/PathOfBuilding << 'LAUNCHER'
+          #!/bin/bash
+          SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+          exec "$SCRIPT_DIR/love.app/Contents/MacOS/love" "$SCRIPT_DIR/love" "$@"
+          LAUNCHER
+          chmod +x dist/PathOfBuilding/PathOfBuilding
+
+      - name: Create zip
+        run: |
+          cd dist
+          zip -9 -r -y ../PathOfBuilding-love-macos-arm64.zip PathOfBuilding/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-arm64
+          path: PathOfBuilding-love-macos-arm64.zip
+          retention-days: 5
+
+  # ------------------------------------------------------------------
   # GitHub Release
   # ------------------------------------------------------------------
   release:
-    needs: [build-windows, build-linux]
+    needs: [build-windows, build-linux, build-macos]
     if: startsWith(github.ref, 'refs/tags/love-v') || github.event_name == 'release'
     runs-on: ubuntu-latest
     permissions:
@@ -212,6 +285,10 @@ jobs:
         with:
           name: linux-x64
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: macos-arm64
+
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
@@ -224,6 +301,7 @@ jobs:
             ### Downloads
             - **Windows x64**: `PathOfBuilding-love-windows-x64.zip` — Extract and run `PathOfBuilding.exe`
             - **Linux x64**: `PathOfBuilding-love-linux-x64.tar.gz` — Extract and run `LOVE-PathOfBuilding`
+            - **macOS (Apple Silicon)**: `PathOfBuilding-love-macos-arm64.zip` — Extract and double-click `PathOfBuilding.app` (right-click → Open on first launch)
 
             ### Requirements
             - **curl** on PATH (ships with Windows 10+ and all modern Linux distros)
@@ -231,6 +309,7 @@ jobs:
           files: |
             PathOfBuilding-love-windows-x64.zip
             PathOfBuilding-love-linux-x64.tar.gz
+            PathOfBuilding-love-macos-arm64.zip
 
   # ------------------------------------------------------------------
   # Push manifest to master for auto-updates
