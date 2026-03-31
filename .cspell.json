@@ -1,0 +1,30 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "pathofbuilding",
+    "pathofbuildingcommunity",
+    "modcache",
+    "Dashof",
+    "Xours",
+    "LÖVE",
+    "miscdata",
+    "busted",
+    "luajit",
+    "ggpk",
+    "datv",
+    "exljbris",
+    "Consolas",
+    "webp",
+    "dwebp",
+    "libwebp",
+    "appimage",
+    "softprops",
+    "mingw"
+  ],
+  "ignorePaths": [
+    "src/Data/*.lua",
+    "runtime/**",
+    ".git/**"
+  ]
+}
